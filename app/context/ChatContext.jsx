@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import axios from 'axios';
 
 const ChatContext = createContext();
 
@@ -12,17 +13,36 @@ export const ChatProvider = ({ children }) => {
     const [rooms, setRooms] = useState([]);
     const [activeRoomId, setActiveRoomId] = useState(null);
     const [messages, setMessages] = useState({}); // { [roomId]: [msg1, msg2] }
-    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [connected, setConnected] = useState(false);
 
     useEffect(() => {
         if (token && user) {
-            const newSocket = io('http://localhost:5000', {
-                auth: { token }
+            // Determine backend URL dynamically
+            let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/web';
+            if (typeof window !== 'undefined' && backendUrl.includes('localhost') && !window.location.hostname.includes('localhost')) {
+                backendUrl = backendUrl.replace('localhost', window.location.hostname);
+            }
+            
+            // Remove /api/web for socket connection (it should be to the root of the server)
+            const socketUrl = backendUrl.split('/api/web')[0];
+            
+            console.log('🔌 Chat: Connecting to', socketUrl);
+            const newSocket = io(socketUrl, {
+                transports: ['websocket'],
+                reconnection: true
             });
 
             newSocket.on('connect', () => {
-                console.log('✅ Connected to Chat');
-                newSocket.emit('authenticate', selectedUserId || user.id);
+                console.log('✅ Chat: Connected to Socket.io');
+                setConnected(true);
+                // Authenticate with the correct ID
+                const authId = selectedUserId || user.id;
+                newSocket.emit('authenticate', authId);
+            });
+
+            newSocket.on('disconnect', () => {
+                console.log('❌ Chat: Disconnected');
+                setConnected(false);
             });
 
             newSocket.on('new_message', (message) => {
@@ -32,51 +52,71 @@ export const ChatProvider = ({ children }) => {
                 }));
             });
 
+            newSocket.on('authenticated', (data) => {
+                console.log('👤 Chat: Authenticated as', selectedUserId || user.id);
+            });
+
+            setSocket(newSocket);
+
             // Fetch rooms initially via REST
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/rooms`, {
+            const cleanBaseUrl = backendUrl.endsWith('/api/web') ? backendUrl.replace('/api/web', '') : backendUrl;
+            const roomsUrl = `${cleanBaseUrl}/api/web/chat/rooms`;
+            
+            axios.get(roomsUrl, {
                 headers: { 
                     'Authorization': `Bearer ${token}`,
                     'x-selected-role': selectedRole || '',
                     'x-selected-user-id': selectedUserId || ''
                 }
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) setRooms(data.data);
-            });
+            .then(res => {
+                if (res.data.success) setRooms(res.data.data);
+            })
+            .catch(err => console.error('Error fetching chat rooms:', err));
 
-            setSocket(newSocket);
-
-            return () => newSocket.close();
+            return () => {
+                newSocket.close();
+                setSocket(null);
+            };
         }
     }, [token, user, selectedRole, selectedUserId]);
 
     useEffect(() => {
         if (activeRoomId && token) {
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/rooms/${activeRoomId}/messages`, {
+            let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/web';
+            if (typeof window !== 'undefined' && backendUrl.includes('localhost') && !window.location.hostname.includes('localhost')) {
+                backendUrl = backendUrl.replace('localhost', window.location.hostname);
+            }
+            const cleanBaseUrl = backendUrl.endsWith('/api/web') ? backendUrl.replace('/api/web', '') : backendUrl;
+            const msgsUrl = `${cleanBaseUrl}/api/web/chat/rooms/${activeRoomId}/messages`;
+
+            axios.get(msgsUrl, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
+            .then(res => {
+                if (res.data.success) {
                     setMessages(prev => ({
                         ...prev,
-                        [activeRoomId]: data.data
+                        [activeRoomId]: res.data.data
                     }));
                 }
-            });
+            })
+            .catch(err => console.error('Error fetching messages:', err));
         }
     }, [activeRoomId, token]);
 
-    const sendMessage = (roomId, content) => {
-        if (socket) {
+    const sendMessage = useCallback((roomId, content) => {
+        if (socket && connected) {
+            const authId = selectedUserId || user.id;
             socket.emit('send_message', {
                 roomId,
-                senderId: user.id,
+                senderId: authId, // Use correct ID for parents/staff
                 content
             });
+        } else {
+            console.warn('⚠️ Chat: Cannot send message, socket not connected');
         }
-    };
+    }, [socket, connected, user, selectedUserId]);
 
     return (
         <ChatContext.Provider value={{ 
@@ -85,7 +125,8 @@ export const ChatProvider = ({ children }) => {
             messages, 
             activeRoomId, 
             setActiveRoomId, 
-            sendMessage 
+            sendMessage,
+            connected
         }}>
             {children}
         </ChatContext.Provider>

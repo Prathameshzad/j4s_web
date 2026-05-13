@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
+import { NotificationProvider } from "../context/NotificationContext";
 import { Toaster } from "react-hot-toast";
 
 export default function RootLayout({
@@ -35,10 +36,12 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
-          <ChatProvider>
-            {children}
-            <Toaster position="top-right" />
-          </ChatProvider>
+          <NotificationProvider>
+            <ChatProvider>
+              {children}
+              <Toaster position="top-right" />
+            </ChatProvider>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

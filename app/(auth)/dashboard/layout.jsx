@@ -21,6 +21,7 @@ import Link from "next/link"
 import { useEffect } from "react"
 import { Search, Bell, HelpCircle, LayoutGrid, Menu } from "lucide-react"
 import { ChildSwitcher } from "@/component/dashboard/ChildSwitcher"
+import NotificationDropdown from "@/component/dashboard/NotificationDropdown"
 
 export default function DashboardLayout({ children }) {
   const { user, loading } = useAuth();
@@ -72,10 +73,7 @@ export default function DashboardLayout({ children }) {
             </div>
             
             <div className="flex items-center gap-1 sm:gap-1.5 ml-1 sm:ml-2 border-l border-slate-200 dark:border-slate-800 pl-1 sm:pl-3">
-              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 relative shrink-0">
-                <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="absolute right-2 top-2 sm:right-2.5 sm:top-2.5 flex h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background"></span>
-              </Button>
+              <NotificationDropdown />
               <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 shrink-0 hidden xs:flex">
                 <HelpCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>

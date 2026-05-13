@@ -11,13 +11,14 @@ import {
     Smile,
     Paperclip,
     User,
-    ChevronLeft
+    ChevronLeft,
+    Share2
 } from 'lucide-react';
 import { Button, Input, Avatar, AvatarFallback, AvatarImage, ScrollArea, Badge, Separator } from "@/component/ui/CustomUI"
 
 const ChatPage = () => {
     const { rooms, messages, sendMessage, socket } = useChat();
-    const { user, token } = useAuth();
+    const { user, token, selectedUserId } = useAuth();
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [input, setInput] = useState('');
     const [localMessages, setLocalMessages] = useState([]);
@@ -64,7 +65,20 @@ const ChatPage = () => {
         setInput('');
     };
 
-    const filteredRooms = rooms.filter(room => 
+    const getLatestMessageTime = (room) => {
+        const contextMsgs = messages[room.id] || [];
+        const latestContextMsg = contextMsgs[contextMsgs.length - 1];
+        const apiMsg = room.messages?.[0];
+        
+        const contextTime = latestContextMsg ? new Date(latestContextMsg.createdAt).getTime() : 0;
+        const apiTime = apiMsg ? new Date(apiMsg.createdAt).getTime() : 0;
+        
+        return Math.max(contextTime, apiTime);
+    };
+
+    const sortedRooms = [...rooms].sort((a, b) => getLatestMessageTime(b) - getLatestMessageTime(a));
+
+    const filteredRooms = sortedRooms.filter(room => 
         (room.displayName || room.name || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -116,13 +130,21 @@ const ChatPage = () => {
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex items-center justify-between mb-1">
                                         <span className="font-semibold truncate text-sm text-slate-900 dark:text-slate-100">{room.displayName || room.name || 'Group Chat'}</span>
-                                        <span className="text-[10px] text-slate-500">12:45 PM</span>
+                                        <span className="text-[10px] text-slate-500">
+                                            {getLatestMessageTime(room) > 0 
+                                                ? new Date(getLatestMessageTime(room)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                                                : ''}
+                                        </span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <p className="text-xs text-slate-500 truncate">
-                                            Click to view discussion...
+                                            {(() => {
+                                                const contextMsgs = messages[room.id] || [];
+                                                const lastMsg = contextMsgs[contextMsgs.length - 1] || room.messages?.[0];
+                                                return lastMsg ? lastMsg.content : 'No messages yet';
+                                            })()}
                                         </p>
-                                        {selectedRoom?.id !== room.id && <div className="h-2 w-2 rounded-full bg-blue-500"></div>}
+                                        {selectedRoom?.id !== room.id && <div className="h-2 w-2 rounded-full bg-orange-500/20"></div>}
                                     </div>
                                 </div>
                             </button>
@@ -173,6 +195,9 @@ const ChatPage = () => {
                                     <Search className="h-5 w-5" />
                                 </Button>
                                 <Button variant="ghost" size="icon" className="text-slate-500">
+                                    <Share2 className="h-5 w-5" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="text-slate-500">
                                     <MoreVertical className="h-5 w-5" />
                                 </Button>
                             </div>
@@ -187,7 +212,8 @@ const ChatPage = () => {
                                     </Badge>
                                 </div>
                                 {localMessages.map((msg, idx) => {
-                                    const isMe = msg.senderId === user.id;
+                                    const currentId = selectedUserId || user?.id;
+                                    const isMe = msg.senderId === currentId || msg.sender?.id === currentId;
                                     return (
                                         <div key={msg.id} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-4 duration-500`} style={{ animationDelay: `${idx * 50}ms` }}>
                                             <Avatar className="h-8 w-8 self-end mb-4">
@@ -200,7 +226,7 @@ const ChatPage = () => {
                                                 </span>
                                                 <div className={`px-4 py-2.5 rounded-2xl ${
                                                     isMe 
-                                                    ? 'bg-blue-600 text-white rounded-br-sm' 
+                                                    ? 'bg-orange-500 text-white rounded-br-sm' 
                                                     : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-sm'
                                                 }`}>
                                                     <p className="text-sm">{msg.content}</p>
@@ -231,19 +257,19 @@ const ChatPage = () => {
                                     placeholder="Type a message..." 
                                     className="flex-1 bg-slate-100 dark:bg-slate-900 border-transparent focus-visible:ring-1 focus-visible:ring-slate-300 rounded-full px-4"
                                 />
-                                <Button 
+                                <button 
                                     type="submit"
                                     disabled={!input.trim()}
-                                    className="rounded-full shrink-0 bg-blue-600 hover:bg-blue-700 w-10 h-10 p-0 flex items-center justify-center disabled:opacity-50"
+                                    className="flex-shrink-0 flex items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 w-12 h-12 text-white shadow-lg shadow-orange-500/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                                 >
-                                    <Send className="h-4 w-4" />
-                                </Button>
+                                    <Send className="h-5 w-5" strokeWidth={2.5} />
+                                </button>
                             </form>
                         </div>
                     </>
                 ) : (
                     <div className="flex flex-1 flex-col items-center justify-center text-center p-8 bg-slate-50 dark:bg-slate-900">
-                        <div className="h-20 w-20 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6">
+                        <div className="h-20 w-20 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-6">
                             <MessageCircle className="h-10 w-10" />
                         </div>
                         <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">

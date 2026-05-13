@@ -17,13 +17,13 @@ export const DropdownMenu = ({ children }) => {
   }, []);
 
   return (
-    <div className="relative inline-block text-left w-full" ref={containerRef}>
+    <div className="relative inline-block text-left" ref={containerRef}>
       {React.Children.map(children, child => {
         if (child.type === DropdownMenuTrigger) {
           return React.cloneElement(child, { onClick: () => setIsOpen(!isOpen) });
         }
         if (child.type === DropdownMenuContent) {
-          return isOpen ? child : null;
+          return isOpen ? React.cloneElement(child, { align: child.props.align }) : null;
         }
         return child;
       })}
@@ -51,11 +51,14 @@ export const DropdownMenuTrigger = ({ children, render, onClick }) => {
  * @param {any} [props.side]
  * @param {any} [props.sideOffset]
  */
-export const DropdownMenuContent = ({ children, className = '', ...props }) => (
-  <div className={`absolute z-50 rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-900 ${className}`} {...props}>
-    {children}
-  </div>
-);
+export const DropdownMenuContent = ({ children, className = '', align, ...props }) => {
+  const alignmentClass = align === 'end' ? 'right-0' : 'left-0';
+  return (
+    <div className={`absolute z-50 mt-2 rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-900 ${alignmentClass} ${className}`} {...props}>
+      {children}
+    </div>
+  );
+};
 
 /**
  * @param {Object} props

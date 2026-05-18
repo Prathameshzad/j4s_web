@@ -52,6 +52,13 @@ export const ChatProvider = ({ children }) => {
                 }));
             });
 
+            newSocket.on('message_edited', (message) => {
+                setMessages(prev => ({
+                    ...prev,
+                    [message.roomId]: (prev[message.roomId] || []).map(m => m.id === message.id ? message : m)
+                }));
+            });
+
             newSocket.on('authenticated', (data) => {
                 console.log('👤 Chat: Authenticated as', selectedUserId || user.id);
             });
@@ -105,16 +112,28 @@ export const ChatProvider = ({ children }) => {
         }
     }, [activeRoomId, token]);
 
-    const sendMessage = useCallback((roomId, content) => {
+    const sendMessage = useCallback((roomId, content, replyToId = null) => {
         if (socket && connected) {
             const authId = selectedUserId || user.id;
             socket.emit('send_message', {
                 roomId,
-                senderId: authId, // Use correct ID for parents/staff
-                content
+                senderId: authId,
+                content,
+                replyToId
             });
         } else {
             console.warn('⚠️ Chat: Cannot send message, socket not connected');
+        }
+    }, [socket, connected, user, selectedUserId]);
+
+    const editMessage = useCallback((messageId, content) => {
+        if (socket && connected) {
+            const authId = selectedUserId || user.id;
+            socket.emit('edit_message', {
+                messageId,
+                senderId: authId,
+                content
+            });
         }
     }, [socket, connected, user, selectedUserId]);
 
@@ -126,6 +145,7 @@ export const ChatProvider = ({ children }) => {
             activeRoomId, 
             setActiveRoomId, 
             sendMessage,
+            editMessage,
             connected
         }}>
             {children}

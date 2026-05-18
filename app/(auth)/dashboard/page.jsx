@@ -12,7 +12,7 @@ import RecentNotices from '../../../component/dashboard/RecentNotices';
 import DashboardCharts from '../../../component/dashboard/DashboardCharts';
 
 const DashboardPage = () => {
-    const { token, selectedProfile } = useAuth();
+    const { token, selectedProfile, selectedChild } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -71,11 +71,13 @@ const DashboardPage = () => {
         const role = selectedProfile?.role?.toLowerCase();
         switch (role) {
             case 'teacher':
+            case 'staff':
                 return <TeacherDashboard stats={stats} role={selectedProfile.role} />;
             case 'student':
                 return <StudentDashboard stats={stats} role={selectedProfile.role} />;
             case 'parent':
-                return <ParentDashboard stats={stats} role={selectedProfile.role} />;
+                const activeKey = selectedChild?.id || selectedChild?.studentId || 'parent-dashboard';
+                return <ParentDashboard key={activeKey} stats={stats} role={selectedProfile.role} />;
             default:
                 return (
                     <div className="space-y-8">

@@ -18,7 +18,7 @@ import {
     SelectValue,
     Spinner
 } from '@/component/ui/CustomUI';
-import { Save, X, Calendar, Users, Send, AlertCircle } from 'lucide-react';
+import { Save, X, Calendar, Users, Send, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function NoticeForm({ initialData, isEdit = false }) {
@@ -32,7 +32,7 @@ export default function NoticeForm({ initialData, isEdit = false }) {
     const [recipients, setRecipients] = useState([]);
     
     const [formData, setFormData] = useState({
-        classId: initialData?.classId || initialData?.class?.id || '',
+        classIds: initialData?.classId ? [initialData.classId] : [],
         targetType: initialData?.targetType || ['STUDENTS'],
         recipientId: initialData?.recipientId || initialData?.recipient?.id || 'ALL',
         title: initialData?.title || '',
@@ -45,12 +45,12 @@ export default function NoticeForm({ initialData, isEdit = false }) {
     }, [token, selectedRole, selectedUserId]);
 
     useEffect(() => {
-        if (formData.classId && formData.targetType && formData.targetType.length > 0) {
+        if (formData.classIds.length === 1 && formData.targetType.length === 1) {
             fetchRecipients();
         } else {
             setRecipients([]);
         }
-    }, [formData.classId, JSON.stringify(formData.targetType)]);
+    }, [JSON.stringify(formData.classIds), JSON.stringify(formData.targetType)]);
 
     const fetchClasses = async () => {
         if (!token) return;
@@ -65,7 +65,13 @@ export default function NoticeForm({ initialData, isEdit = false }) {
             });
             const result = await response.json();
             if (result.success) {
-                setClasses(result.data);
+                // Numeric sort
+                const sorted = result.data.sort((a, b) => {
+                    const aStd = String(a.standard?.name || '');
+                    const bStd = String(b.standard?.name || '');
+                    return aStd.localeCompare(bStd, undefined, { numeric: true });
+                });
+                setClasses(sorted);
             } else {
                 toast.error('Failed to load classes');
             }
@@ -78,12 +84,14 @@ export default function NoticeForm({ initialData, isEdit = false }) {
     };
 
     const fetchRecipients = async () => {
-        if (!token || !formData.classId || formData.targetType.length === 0) return;
+        if (!token || formData.classIds.length !== 1 || formData.targetType.length !== 1) return;
         setFetchingRecipients(true);
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-            const queryParams = new URLSearchParams({ classId: formData.classId });
-            formData.targetType.forEach(type => queryParams.append('targetType', type));
+            const queryParams = new URLSearchParams({ 
+                classId: formData.classIds[0],
+                targetType: formData.targetType[0]
+            });
             
             const response = await fetch(`${baseUrl}/notice/recipients?${queryParams.toString()}`, {
                 headers: { 
@@ -106,8 +114,8 @@ export default function NoticeForm({ initialData, isEdit = false }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (!formData.title || !formData.content || !formData.classId) {
-            toast.error('Please fill in all required fields');
+        if (!formData.title || !formData.content) {
+            toast.error('Please fill in title and content');
             return;
         }
 
@@ -116,7 +124,9 @@ export default function NoticeForm({ initialData, isEdit = false }) {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
             const payload = {
                 ...formData,
-                recipientId: formData.recipientId === 'ALL' ? undefined : formData.recipientId
+                recipientIds: formData.recipientId === 'ALL' || formData.classIds.length !== 1 || formData.targetType.length !== 1
+                    ? [] 
+                    : [formData.recipientId]
             };
 
             const url = isEdit ? `${baseUrl}/notice/${initialData.id}` : `${baseUrl}/notice`;
@@ -161,29 +171,10 @@ export default function NoticeForm({ initialData, isEdit = false }) {
                 </CardHeader>
                 <CardContent className="p-8 space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* 1. Standards / Classes */}
+                        
+                        {/* 1. Target Audience (Multi-select) */}
                         <div className="space-y-3">
-                            <Label className="text-sm font-bold text-slate-600 ml-1">Target Class (Standards)</Label>
-                            <Select 
-                                value={formData.classId} 
-                                onValueChange={(val) => setFormData({...formData, classId: val})}
-                            >
-                                <SelectTrigger className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 focus:ring-primary/20 transition-all">
-                                    <SelectValue placeholder="Select class" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {classes.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>
-                                            {c.standard?.name} - {c.division?.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* 2. Shared With (Multi-select) */}
-                        <div className="space-y-3">
-                            <Label className="text-sm font-bold text-slate-600 ml-1">Shared With</Label>
+                            <Label className="text-sm font-bold text-slate-600 ml-1">Target Audience</Label>
                             <div className="flex flex-wrap gap-2">
                                 {['STUDENTS', 'PARENTS', 'TEACHERS'].map((type) => {
                                     const isSelected = formData.targetType.includes(type);
@@ -192,53 +183,100 @@ export default function NoticeForm({ initialData, isEdit = false }) {
                                             key={type}
                                             type="button"
                                             variant={isSelected ? 'default' : 'outline'}
-                                            className={`h-14 flex-1 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                                            className={`h-12 flex-1 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
                                                 isSelected 
-                                                    ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]' 
+                                                    ? 'bg-primary text-white shadow-lg shadow-primary/20' 
                                                     : 'bg-slate-50/50 border-slate-200 text-slate-400 hover:bg-slate-100'
                                             }`}
                                             onClick={() => {
-                                                let newTargets = [...formData.targetType];
-                                                if (newTargets.includes(type)) {
-                                                    if (newTargets.length > 1) {
-                                                        newTargets = newTargets.filter(t => t !== type);
-                                                    }
-                                                } else {
-                                                    newTargets.push(type);
+                                                let newTargets = isSelected 
+                                                    ? formData.targetType.filter(t => t !== type)
+                                                    : [...formData.targetType, type];
+                                                if (newTargets.length > 0) {
+                                                    setFormData({ ...formData, targetType: newTargets, recipientId: 'ALL' });
                                                 }
-                                                setFormData({ ...formData, targetType: newTargets, recipientId: 'ALL' });
                                             }}
                                         >
-                                            {type.toLowerCase()}
+                                            {isSelected && <CheckCircle2 className="w-3 h-3 mr-2" />}
+                                            {type === 'STUDENTS' ? 'Student' : type === 'PARENTS' ? 'Parent' : 'Staff'}
                                         </Button>
                                     );
                                 })}
                             </div>
                         </div>
 
-                        {/* 3. Shared To (All or Individual) */}
+                        {/* 2. Target Classes (Multi-select) */}
                         <div className="space-y-3">
-                            <Label className="text-sm font-bold text-slate-600 ml-1">Shared To</Label>
-                            <Select 
-                                value={formData.recipientId} 
-                                onValueChange={(val) => setFormData({...formData, recipientId: val})}
-                                disabled={!formData.classId || fetchingRecipients}
-                            >
-                                <SelectTrigger className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 focus:ring-primary/20 transition-all">
-                                    {fetchingRecipients ? <Spinner size="sm" /> : <SelectValue placeholder="All" />}
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ALL">All {formData.targetType.map(t => t.toLowerCase()).join(', ')}</SelectItem>
-                                    {recipients.map(r => (
-                                        <SelectItem key={r.id} value={r.id}>
-                                            {r.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Label className="text-sm font-bold text-slate-600 ml-1">Target Classes</Label>
+                            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1">
+                                <Button
+                                    type="button"
+                                    variant={formData.classIds.length === 0 ? 'primary' : 'outline'}
+                                    className={`h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                                        formData.classIds.length === 0 
+                                            ? 'shadow-lg shadow-primary/20' 
+                                            : 'bg-slate-50/50 border-slate-200 text-slate-400 hover:bg-slate-100'
+                                    }`}
+                                    onClick={() => setFormData({ ...formData, classIds: [], recipientId: 'ALL' })}
+                                >
+                                    {formData.classIds.length === 0 && <CheckCircle2 className="w-3 h-3 mr-2" />}
+                                    All Classes
+                                </Button>
+                                {classes.map((c) => {
+                                    const isSelected = formData.classIds.includes(c.id);
+                                    return (
+                                        <Button
+                                            key={c.id}
+                                            type="button"
+                                            variant={isSelected ? 'primary' : 'outline'}
+                                            className={`h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                                                isSelected 
+                                                    ? 'shadow-lg shadow-primary/20' 
+                                                    : 'bg-slate-50/50 border-slate-200 text-slate-400 hover:bg-slate-100'
+                                            }`}
+                                            onClick={() => {
+                                                let newClasses = [...formData.classIds];
+                                                if (isSelected) {
+                                                    newClasses = newClasses.filter(id => id !== c.id);
+                                                } else {
+                                                    newClasses.push(c.id);
+                                                }
+                                                setFormData({ ...formData, classIds: newClasses, recipientId: 'ALL' });
+                                            }}
+                                        >
+                                            {isSelected && <CheckCircle2 className="w-3 h-3 mr-2" />}
+                                            {c.standard?.name} - {c.division?.name}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
                         </div>
 
-                        {/* 6. Date */}
+                        {/* 3. Shared To (Only if single audience & single class) */}
+                        {formData.classIds.length === 1 && formData.targetType.length === 1 && (
+                            <div className="space-y-3">
+                                <Label className="text-sm font-bold text-slate-600 ml-1">Shared To</Label>
+                                <Select 
+                                    value={formData.recipientId} 
+                                    onValueChange={(val) => setFormData({...formData, recipientId: val})}
+                                    disabled={fetchingRecipients}
+                                >
+                                    <SelectTrigger className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 focus:ring-primary/20 transition-all">
+                                        {fetchingRecipients ? <Spinner size="sm" /> : <SelectValue placeholder="All" />}
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">All Recipients</SelectItem>
+                                        {recipients.map(r => (
+                                            <SelectItem key={r.id} value={r.id}>
+                                                {r.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
+                        {/* 4. Date */}
                         <div className="space-y-3">
                             <Label className="text-sm font-bold text-slate-600 ml-1">Scheduled Date</Label>
                             <div className="relative">
@@ -254,7 +292,7 @@ export default function NoticeForm({ initialData, isEdit = false }) {
                         </div>
                     </div>
 
-                    {/* 4. Title */}
+                    {/* 5. Title */}
                     <div className="space-y-3">
                         <Label className="text-sm font-bold text-slate-600 ml-1">Notice Title</Label>
                         <Input 
@@ -265,7 +303,7 @@ export default function NoticeForm({ initialData, isEdit = false }) {
                         />
                     </div>
 
-                    {/* 5. Details */}
+                    {/* 6. Details */}
                     <div className="space-y-3">
                         <Label className="text-sm font-bold text-slate-600 ml-1">Details</Label>
                         <textarea 

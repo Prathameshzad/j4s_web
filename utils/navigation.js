@@ -7,7 +7,8 @@ import {
     Clock,
     ClipboardCheck,
     DollarSign,
-    LifeBuoy
+    LifeBuoy,
+    BookOpen
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
@@ -37,6 +38,13 @@ export const NAV_ITEMS = [
         label: 'Messages',
         icon: MessageSquare,
         href: '/dashboard/chat',
+        roles: ['STUDENT', 'STAFF', 'PARENT']
+    },
+    {
+        id: 'homework',
+        label: 'Homework',
+        icon: BookOpen,
+        href: '/dashboard/homework',
         roles: ['STUDENT', 'STAFF', 'PARENT']
     },
     // {

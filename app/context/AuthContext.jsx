@@ -28,12 +28,13 @@ export const AuthProvider = ({ children }) => {
                 const profile = JSON.parse(storedProfile);
                 setSelectedProfile(profile);
                 
-                if (profile.role === 'PARENT' && profile.children?.length > 0) {
+                const profileChildren = profile.children || profile.details?.children || [];
+                if (profile.role === 'PARENT' && profileChildren.length > 0) {
                     if (storedChild) {
                         setSelectedChild(JSON.parse(storedChild));
                     } else {
-                        setSelectedChild(profile.children[0]);
-                        localStorage.setItem('selectedChild', JSON.stringify(profile.children[0]));
+                        setSelectedChild(profileChildren[0]);
+                        localStorage.setItem('selectedChild', JSON.stringify(profileChildren[0]));
                     }
                 }
             } else if (parsedUser.availableProfiles && parsedUser.availableProfiles.length > 0) {
@@ -41,9 +42,10 @@ export const AuthProvider = ({ children }) => {
                 setSelectedProfile(initialProfile);
                 localStorage.setItem('selectedProfile', JSON.stringify(initialProfile));
                 
-                if (initialProfile.role === 'PARENT' && initialProfile.children?.length > 0) {
-                    setSelectedChild(initialProfile.children[0]);
-                    localStorage.setItem('selectedChild', JSON.stringify(initialProfile.children[0]));
+                const profileChildren = initialProfile.children || initialProfile.details?.children || [];
+                if (initialProfile.role === 'PARENT' && profileChildren.length > 0) {
+                    setSelectedChild(profileChildren[0]);
+                    localStorage.setItem('selectedChild', JSON.stringify(profileChildren[0]));
                 }
             }
         }
@@ -61,8 +63,9 @@ export const AuthProvider = ({ children }) => {
             setSelectedProfile(initialProfile);
             localStorage.setItem('selectedProfile', JSON.stringify(initialProfile));
             
-            if (initialProfile.role === 'PARENT' && initialProfile.children?.length > 0) {
-                const initialChild = initialProfile.children[0];
+            const profileChildren = initialProfile.children || initialProfile.details?.children || [];
+            if (initialProfile.role === 'PARENT' && profileChildren.length > 0) {
+                const initialChild = profileChildren[0];
                 setSelectedChild(initialChild);
                 localStorage.setItem('selectedChild', JSON.stringify(initialChild));
             }
@@ -75,8 +78,9 @@ export const AuthProvider = ({ children }) => {
         setSelectedProfile(profile);
         localStorage.setItem('selectedProfile', JSON.stringify(profile));
         
-        if (profile.role === 'PARENT' && profile.children?.length > 0) {
-            const initialChild = profile.children[0];
+        const profileChildren = profile.children || profile.details?.children || [];
+        if (profile.role === 'PARENT' && profileChildren.length > 0) {
+            const initialChild = profileChildren[0];
             setSelectedChild(initialChild);
             localStorage.setItem('selectedChild', JSON.stringify(initialChild));
         } else {
@@ -107,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
     const getDisplayName = () => {
         if (!user) return '';
-        if (selectedProfile?.role === 'PARENT' && selectedChild) return `${selectedProfile.name} (${selectedChild.name})`;
+        if (selectedProfile?.role === 'PARENT') return selectedProfile.name;
         if (selectedProfile?.name) return selectedProfile.name;
         return user.name;
     };

@@ -3,7 +3,7 @@
 import React from 'react';
 import { 
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    BarChart, Bar, Cell
+    BarChart, Bar, Cell, LineChart, Line
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { Badge } from '@/component/ui/CustomUI';
@@ -35,13 +35,18 @@ const DashboardCharts = ({ data = {}, role }) => {
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
+            const dataKey = payload[0].dataKey;
+            const isCount = dataKey === 'count';
             return (
                 <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-4 rounded-xl shadow-2xl backdrop-blur-xl bg-white/90 dark:bg-slate-950/90">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{label}</p>
                     <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                         <p className="text-xl font-black text-slate-900 dark:text-white tracking-tighter">
-                            {payload[0].value} <span className="text-[10px] text-slate-400 uppercase tracking-widest ml-1 font-bold">Units</span>
+                            {payload[0].value}{isCount ? '' : '%'} 
+                            <span className="text-[10px] text-slate-400 uppercase tracking-widest ml-1 font-bold">
+                                {isCount ? 'Count' : 'Attendance'}
+                            </span>
                         </p>
                     </div>
                 </div>
@@ -67,7 +72,7 @@ const DashboardCharts = ({ data = {}, role }) => {
 
     const commonTransition = { duration: 1, ease: [0.23, 1, 0.32, 1] };
 
-    if (role === 'STUDENT') {
+    if (role?.toUpperCase() === 'STUDENT') {
         return (
             <motion.div 
                 initial={{ opacity: 0, scale: 0.98 }}
@@ -82,7 +87,7 @@ const DashboardCharts = ({ data = {}, role }) => {
                         icon={Activity} 
                     />
                     <div className="h-[300px] sm:h-[400px] w-full mt-6">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <AreaChart data={attendanceData}>
                                 <defs>
                                     <linearGradient id="colorStudents" x1="0" y1="0" x2="0" y2="1">
@@ -123,6 +128,56 @@ const DashboardCharts = ({ data = {}, role }) => {
         );
     }
 
+    if (role?.toUpperCase() === 'STAFF') {
+        return (
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={commonTransition}
+                className="h-full"
+            >
+                <div className="p-6 lg:p-8">
+                    <ChartHeader 
+                        title="Class Attendance Trend" 
+                        description="Weekly trajectory analysis" 
+                        icon={Activity} 
+                    />
+                    <div className="h-[300px] sm:h-[400px] w-full mt-6">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                            <LineChart data={attendanceData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800" />
+                                <XAxis 
+                                    dataKey="date" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
+                                    dy={15}
+                                />
+                                <YAxis 
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
+                                    dx={-10}
+                                    domain={[0, 100]}
+                                />
+                                <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#f97316', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                                <Line 
+                                    type="monotone" 
+                                    dataKey="value" 
+                                    stroke="#f97316" 
+                                    strokeWidth={4}
+                                    dot={{ r: 4, stroke: '#f97316', strokeWidth: 2, fill: '#fff' }}
+                                    activeDot={{ r: 6, stroke: '#f97316', strokeWidth: 2, fill: '#f97316' }}
+                                    animationDuration={2000}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </motion.div>
+        );
+    }
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-slate-50 dark:bg-slate-800/50">
             <div className="bg-white dark:bg-slate-900 p-6 lg:p-8">
@@ -132,7 +187,7 @@ const DashboardCharts = ({ data = {}, role }) => {
                     icon={TrendingUp} 
                 />
                 <div className="h-[300px] sm:h-[350px] w-full mt-6">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <AreaChart data={attendanceData}>
                             <defs>
                                 <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
@@ -170,7 +225,7 @@ const DashboardCharts = ({ data = {}, role }) => {
                     icon={BarChart3} 
                 />
                 <div className="h-[300px] sm:h-[350px] w-full mt-6">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <BarChart data={distributionData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800" />
                             <XAxis 

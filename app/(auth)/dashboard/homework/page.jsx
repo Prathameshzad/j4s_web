@@ -102,7 +102,7 @@ export default function HomeworkPage() {
             <div className="w-16 h-16 bg-slate-50 rounded-md flex items-center justify-center animate-pulse border border-slate-100">
                 <BookOpen className="text-primary" size={32} />
             </div>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Indexing Academic Paradigms...</p>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Loading Homework List...</p>
         </div>
     );
 
@@ -115,8 +115,8 @@ export default function HomeworkPage() {
                         <BookOpen size={24} />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase font-header">Assignment Matrix</h1>
-                        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-1">Strategic management of academic deliverables</p>
+                        <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase font-header">Homework & Assignments</h1>
+                        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-1">View, track, and submit school homework assignments</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -126,7 +126,7 @@ export default function HomeworkPage() {
                             className="h-11 rounded-md px-8 font-bold text-xs uppercase tracking-wider shadow-md shadow-primary/10 transition-all active:scale-95 flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
-                            Deploy Task
+                            Add Homework
                         </Button>
                     )}
                     <Button variant="outline" className="h-11 rounded-md px-6 text-[10px] font-bold uppercase tracking-wider border-slate-200">
@@ -146,11 +146,11 @@ export default function HomeworkPage() {
                                         <FileText size={32} />
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">Registry Void</p>
-                                        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">No active academic paradigms currently registered.</p>
+                                        <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">No Homework Found</p>
+                                        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">There are no homework assignments listed at the moment.</p>
                                     </div>
                                     <Button variant="outline" size="sm" onClick={fetchHomeworks} className="mt-4 uppercase text-[9px] font-bold tracking-widest border-slate-200">
-                                        Refresh Registry
+                                        Reload Homework
                                     </Button>
                                 </CardContent>
                             </Card>
@@ -209,15 +209,15 @@ export default function HomeworkPage() {
 
                                         <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100">
                                             <div className="space-y-1">
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Node</p>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Class</p>
                                                 <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight">
                                                     {hw.class?.standard?.name}-{hw.class?.division?.name}
                                                 </p>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{isStaff ? 'Engagement' : 'Execution'}</p>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{isStaff ? 'Submissions' : 'Status'}</p>
                                                 <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight">
-                                                    {isStaff ? `${hw._count?.submissions || 0} Submits` : (hw.submissions?.length > 0 ? 'Verified' : 'Pending')}
+                                                    {isStaff ? `${hw._count?.submissions || 0} Submits` : (hw.submissions?.length > 0 ? 'Submitted' : 'Pending')}
                                                 </p>
                                             </div>
                                         </div>
@@ -251,23 +251,23 @@ export default function HomeworkPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
                 <Card className="bg-slate-900 text-white border-none shadow-lg p-8 relative overflow-hidden group">
                     <Shield className="absolute top-6 right-6 h-12 w-12 text-primary opacity-10 group-hover:scale-110 transition-transform" />
-                    <h4 className="text-xs font-bold uppercase tracking-widest mb-3 text-primary">Security Protocol</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest mb-3 text-primary">Homework Portal</h4>
                     <p className="text-slate-400 font-semibold text-[11px] leading-relaxed">
-                        All assignment submissions are verified and timestamped in the academic ledger.
+                        All homework answers are securely sent directly to the teacher for evaluation.
                     </p>
                 </Card>
                 <Card className="bg-primary text-white border-none shadow-lg p-8 relative overflow-hidden group">
                     <Trophy className="absolute top-6 right-6 h-12 w-12 text-white opacity-10 group-hover:scale-110 transition-transform" />
-                    <h4 className="text-xs font-bold uppercase tracking-widest mb-3">Performance Node</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest mb-3">Academic Growth</h4>
                     <p className="text-white/80 font-semibold text-[11px] leading-relaxed">
-                        Academic engagement metrics integrated with core grading architecture.
+                        Regular homework submissions help track progress and improve overall school grades.
                     </p>
                 </Card>
                 <Card className="p-8 relative overflow-hidden group border-slate-200">
                     <Zap className="absolute top-6 right-6 h-12 w-12 text-slate-200 opacity-20 group-hover:scale-110 transition-transform" />
-                    <h4 className="text-xs font-bold uppercase tracking-widest mb-3 text-slate-500">Deployment Efficiency</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest mb-3 text-slate-500">Assignments Count</h4>
                     <p className="text-slate-500 font-semibold text-[11px] leading-relaxed">
-                        {homeworks.length} active paradigms deployed in current operational cycle.
+                        There are currently {homeworks.length} active homework assignments listed in the portal.
                     </p>
                 </Card>
             </div>

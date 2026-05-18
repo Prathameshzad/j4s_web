@@ -72,6 +72,13 @@ const StatsGrid = ({ stats = {}, role }) => {
                     { title: 'Pending Tasks', value: stats.pendingLeaves || '0', icon: FileText, colorClass: 'bg-purple-600', textColor: 'text-purple-600', bgClass: 'bg-purple-50', trend: 'Requires Action', status: 'URGENT' },
                     { title: 'Official Notices', value: stats.activeNotices || '0', icon: Bell, colorClass: 'bg-rose-600', textColor: 'text-rose-600', bgClass: 'bg-rose-50', trend: 'Latest Updates' },
                 ];
+            case 'PARENT_STUDENT':
+                return [
+                    { title: 'Attendance Record', value: stats.attendancePercentage ? `${stats.attendancePercentage}%` : '100%', icon: Calendar, colorClass: 'bg-orange-500', textColor: 'text-orange-600', bgClass: 'bg-orange-50', trend: 'Monthly Average', status: 'LIVE' },
+                    { title: 'Today\'s Sessions', value: stats.todayClasses || '0', icon: GraduationCap, colorClass: 'bg-blue-600', textColor: 'text-blue-600', bgClass: 'bg-blue-50', trend: 'Academic Schedule', status: 'ACTIVE' },
+                    { title: 'Pending Homework', value: stats.pendingLeaves || '0', icon: FileText, colorClass: 'bg-purple-600', textColor: 'text-purple-600', bgClass: 'bg-purple-50', trend: 'Requires Action', status: 'URGENT' },
+                    { title: 'Official Notices', value: stats.activeNotices || '0', icon: Bell, colorClass: 'bg-rose-600', textColor: 'text-rose-600', bgClass: 'bg-rose-50', trend: 'Latest Updates' },
+                ];
             case 'TEACHER':
                 return [
                     { title: 'Active Classes', value: stats.assignedClasses || '0', icon: School, colorClass: 'bg-indigo-600', textColor: 'text-indigo-600', bgClass: 'bg-indigo-50', status: 'STAFF' },

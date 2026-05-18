@@ -67,8 +67,8 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Shiksha Disha. All rights reserved.
           </p>
           <div className="flex gap-8 text-xs">
-            <Link href="#" className="hover:text-white">Privacy Policy</Link>
-            <Link href="#" className="hover:text-white">Terms of Service</Link>
+            <Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link>
+            <Link href="/term-and-condition" className="hover:text-white">Terms & Conditions</Link>
             <Link href="#" className="hover:text-white">Cookie Policy</Link>
           </div>
         </div>

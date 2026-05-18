@@ -24,7 +24,7 @@ import { ChildSwitcher } from "@/component/dashboard/ChildSwitcher"
 import NotificationDropdown from "@/component/dashboard/NotificationDropdown"
 
 export default function DashboardLayout({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, selectedRole } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -62,7 +62,9 @@ export default function DashboardLayout({ children }) {
               </Button>
             </SidebarTrigger>
             <div className="flex flex-col overflow-hidden">
-              <h1 className="text-[9px] sm:text-[10px] font-black text-primary uppercase tracking-[0.2em] leading-none mb-1 truncate">Student</h1>
+              <h1 className="text-[9px] sm:text-[10px] font-black text-primary uppercase tracking-[0.2em] leading-none mb-1 truncate">
+                {selectedRole === 'PARENT' ? 'Parent' : selectedRole === 'STAFF' ? 'Teacher' : 'Student'}
+              </h1>
               <h2 className="text-[11px] sm:text-[13px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none truncate">Dashboard</h2>
             </div>
           </div>

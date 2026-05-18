@@ -61,8 +61,8 @@ export default function AddHomeworkPage() {
                 </Breadcrumb>
                 
                 <div className="flex items-center gap-4 mt-2">
-                    <div className="p-4 bg-indigo-600/10 rounded-3xl">
-                        <BookOpen className="w-8 h-8 text-indigo-600" />
+                    <div className="p-4 bg-primary/10 rounded-3xl">
+                        <BookOpen className="w-8 h-8 text-primary" />
                     </div>
                     <div>
                         <h1 className="text-3xl font-black text-slate-800 tracking-tight">

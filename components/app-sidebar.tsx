@@ -21,7 +21,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
+  SidebarMenuButton as OriginalSidebarMenuButton,
   SidebarMenuItem,
   SidebarGroup,
   SidebarGroupLabel,
@@ -39,6 +39,8 @@ import {
   useSidebar,
 } from "@/component/ui/CustomUI"
 import { useAuth } from "@/app/context/AuthContext"
+
+const SidebarMenuButton = OriginalSidebarMenuButton as any;
 import { useRouter, usePathname } from "next/navigation"
 import { NAV_ITEMS } from "@/utils/navigation"
 
@@ -174,17 +176,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton render={<a href="#" />} tooltip="Profile" className="h-10 hover:bg-primary/5">
+                <SidebarMenuButton 
+                  onClick={() => router.push("/dashboard/myprofile")}
+                  tooltip="Profile" 
+                  className="h-10 hover:bg-primary/5 active:scale-95 transition-all"
+                  isActive={pathname === "/dashboard/myprofile"}
+                >
                   <div className="flex items-center gap-3">
-                    <User className="size-5 text-muted-foreground shrink-0" />
+                    <User className={`size-5 shrink-0 ${pathname === "/dashboard/myprofile" ? 'text-primary' : 'text-muted-foreground'}`} />
                     {showLabel && <span className="font-bold tracking-tight animate-in fade-in duration-300">My Profile</span>}
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton render={<a href="#" />} tooltip="Settings" className="h-10 hover:bg-primary/5">
+                <SidebarMenuButton 
+                  onClick={() => router.push("/dashboard/settings")}
+                  tooltip="Settings" 
+                  className="h-10 hover:bg-primary/5 active:scale-95 transition-all"
+                  isActive={pathname === "/dashboard/settings"}
+                >
                   <div className="flex items-center gap-3">
-                    <Settings2 className="size-5 text-muted-foreground shrink-0" />
+                    <Settings2 className={`size-5 shrink-0 ${pathname === "/dashboard/settings" ? 'text-primary' : 'text-muted-foreground'}`} />
                     {showLabel && <span className="font-bold tracking-tight animate-in fade-in duration-300">Settings</span>}
                   </div>
                 </SidebarMenuButton>
@@ -241,7 +253,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-muted/50" />
-                  <DropdownMenuItem className="rounded-lg py-2 font-medium focus:bg-primary/5 focus:text-primary">
+                  <DropdownMenuItem 
+                    onClick={() => router.push("/dashboard/myprofile")}
+                    className="rounded-lg py-2 font-medium focus:bg-primary/5 focus:text-primary cursor-pointer"
+                  >
                     <User className="mr-2 size-4" />
                     Account
                   </DropdownMenuItem>

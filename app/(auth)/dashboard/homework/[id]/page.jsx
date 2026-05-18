@@ -39,6 +39,7 @@ import {
     Eye
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getMediaUrl } from '@/utils/media';
 
 export default function HomeworkDetailPage() {
     const { id } = useParams();
@@ -56,13 +57,6 @@ export default function HomeworkDetailPage() {
             fetchHomeworkDetails();
         }
     }, [id, token]);
-
-    const getMediaUrl = (url) => {
-        if (!url) return '#';
-        if (url.startsWith('http')) return url;
-        const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/web').replace('/api/web', '');
-        return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
-    };
 
     const fetchHomeworkDetails = async () => {
         setLoading(true);
@@ -152,7 +146,7 @@ export default function HomeworkDetailPage() {
                     </Button>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <Badge className="bg-indigo-50 text-indigo-600 border-none px-3 py-1 text-[10px] uppercase font-black tracking-widest">
+                            <Badge className="bg-primary/10 text-primary border-none px-3 py-1 text-[10px] uppercase font-black tracking-widest">
                                 {homework.type}
                             </Badge>
                             <span className="text-slate-400 font-bold text-xs">•</span>
@@ -180,17 +174,17 @@ export default function HomeworkDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Details Column */}
                 <div className="lg:col-span-1 space-y-8">
-                    <Card className="border-none shadow-xl rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden">
+                    <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white overflow-hidden">
                         <CardContent className="p-10 space-y-8">
                             <div className="space-y-4">
-                                <p className="text-indigo-100/80 font-medium text-lg leading-relaxed">
+                                <p className="text-white/80 font-medium text-lg leading-relaxed">
                                     {homework.content}
                                 </p>
                             </div>
 
                             {homework.attachments && homework.attachments.length > 0 && (
                                 <div className="space-y-4 pt-6 border-t border-white/10">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-indigo-200">Attachments</h3>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-white/70">Attachments</h3>
                                     <div className="space-y-2">
                                         {homework.attachments.map(file => (
                                             <a 
@@ -200,7 +194,7 @@ export default function HomeworkDetailPage() {
                                                 className="flex items-center justify-between p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-colors"
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <FileText className="w-5 h-5 text-indigo-200" />
+                                                    <FileText className="w-5 h-5 text-white/70" />
                                                     <span className="text-sm font-bold truncate max-w-[150px]">{file.originalName}</span>
                                                 </div>
                                                 <Download className="w-4 h-4" />
@@ -236,7 +230,7 @@ export default function HomeworkDetailPage() {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center justify-between px-4">
                         <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                            <Users className="w-6 h-6 text-indigo-600" />
+                            <Users className="w-6 h-6 text-primary" />
                             {isStaff ? 'Student Submissions' : (isParent ? "Child's Submission" : 'Your Submission')}
                         </h2>
                         {isStaff && (
@@ -259,7 +253,7 @@ export default function HomeworkDetailPage() {
                                     <CardContent className="p-6">
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-indigo-600 font-black text-xl shadow-inner">
+                                                <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-primary font-black text-xl shadow-inner">
                                                     {sub.student?.name?.[0]}
                                                 </div>
                                                 <div>
@@ -281,7 +275,7 @@ export default function HomeworkDetailPage() {
                                                 </Badge>
                                                 
                                                 {sub.grade && (
-                                                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-lg border border-indigo-100">
+                                                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg border border-primary/20">
                                                         {sub.grade}
                                                     </div>
                                                 )}
@@ -313,7 +307,7 @@ export default function HomeworkDetailPage() {
                                         {sub.attachments && sub.attachments.length > 0 && (
                                             <div className="mt-4 flex flex-wrap gap-2">
                                                 {sub.attachments.map(file => (
-                                                    <a key={file.id} href={getMediaUrl(file.url)} target="_blank" className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors">
+                                                    <a key={file.id} href={getMediaUrl(file.url)} target="_blank" className="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-colors">
                                                         <FileText className="w-3 h-3" />
                                                         {file.originalName}
                                                     </a>
@@ -333,7 +327,7 @@ export default function HomeworkDetailPage() {
                 <DialogContent className="max-w-2xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
                     <DialogHeader className="p-8 bg-slate-50 border-b border-slate-100">
                         <DialogTitle className="text-2xl font-black text-slate-800 flex items-center gap-3">
-                            <GraduationCap className="w-6 h-6 text-indigo-600" />
+                            <GraduationCap className="w-6 h-6 text-primary" />
                             Grade Submission: {gradingSubmission?.student?.name}
                         </DialogTitle>
                     </DialogHeader>
@@ -344,7 +338,7 @@ export default function HomeworkDetailPage() {
                                 <Label className="text-sm font-bold text-slate-600">Grade / Score</Label>
                                 <Input 
                                     placeholder="e.g. A, 9.5, 95%"
-                                    className="h-14 rounded-2xl font-black text-lg border-slate-200 bg-slate-50 focus:ring-indigo-600/20"
+                                    className="h-14 rounded-2xl font-black text-lg border-slate-200 bg-slate-50 focus:ring-primary/20"
                                     value={gradeData.grade}
                                     onChange={(e) => setGradeData({...gradeData, grade: e.target.value})}
                                 />
@@ -371,7 +365,7 @@ export default function HomeworkDetailPage() {
                             <textarea 
                                 rows={5}
                                 placeholder="Write some constructive feedback..."
-                                className="w-full p-6 rounded-[2rem] border-slate-200 bg-slate-50 focus:ring-indigo-600/20 transition-all outline-none text-slate-700 font-medium resize-none"
+                                className="w-full p-6 rounded-[2rem] border-slate-200 bg-slate-50 focus:ring-primary/20 transition-all outline-none text-slate-700 font-medium resize-none"
                                 value={gradeData.feedback}
                                 onChange={(e) => setGradeData({...gradeData, feedback: e.target.value})}
                             />
@@ -388,7 +382,7 @@ export default function HomeworkDetailPage() {
                             </Button>
                             <Button 
                                 type="submit" 
-                                className="h-14 px-10 rounded-2xl bg-indigo-600 text-white font-black hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center gap-2"
+                                className="h-14 px-10 rounded-2xl bg-primary text-white font-black hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95 flex items-center gap-2"
                                 disabled={submittingGrade}
                             >
                                 {submittingGrade ? <Spinner size="sm" /> : <Send className="w-4 h-4" />}

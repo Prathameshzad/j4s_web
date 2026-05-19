@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Docker Compose automatically loads variables from the local .env file
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    image: shikshadisha-web:latest
+    container_name: shikshadisha-web
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - shikshadisha-network
+networks:
+  shikshadisha-network:
+    external: true

@@ -28,6 +28,7 @@ import {
     ChevronLeft, 
     Calendar, 
     Users, 
+    User,
     BookOpen, 
     CheckCircle, 
     Clock, 
@@ -51,6 +52,12 @@ export default function HomeworkDetailPage() {
     const [gradingSubmission, setGradingSubmission] = useState(null);
     const [gradeData, setGradeData] = useState({ feedback: '', grade: '', status: 'GRADED' });
     const [submittingGrade, setSubmittingGrade] = useState(false);
+
+    const [submitContent, setSubmitContent] = useState('');
+    const [submitFiles, setSubmitFiles] = useState([]);
+    const [existingAttachments, setExistingAttachments] = useState([]);
+    const [isSubmittingHomework, setIsSubmittingHomework] = useState(false);
+    const [editingSubmissionId, setEditingSubmissionId] = useState(null);
 
     useEffect(() => {
         if (id && token) {
@@ -114,6 +121,73 @@ export default function HomeworkDetailPage() {
         }
     };
 
+    const handleHomeworkSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmittingHomework(true);
+        try {
+            let attachmentIds = [];
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/web';
+
+            if (submitFiles.length > 0) {
+                const formData = new FormData();
+                submitFiles.forEach(file => formData.append('files', file));
+                
+                const uploadRes = await fetch(`${baseUrl.replace('/api/web', '')}/api/app/media/upload`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: formData
+                });
+                const uploadData = await uploadRes.json();
+                if (uploadData.success) {
+                    attachmentIds = uploadData.data.map(media => media.id);
+                } else {
+                    toast.error('Failed to upload files');
+                    setIsSubmittingHomework(false);
+                    return;
+                }
+            }
+
+            const finalAttachmentIds = [...existingAttachments.map(f => f.id), ...attachmentIds];
+
+            const url = editingSubmissionId 
+                ? `${baseUrl}/homework/submission/${editingSubmissionId}`
+                : `${baseUrl}/homework/${id}/submit`;
+            const method = editingSubmissionId ? 'PATCH' : 'POST';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'x-selected-role': selectedRole,
+                    'x-selected-user-id': selectedUserId || ''
+                },
+                body: JSON.stringify({
+                    content: submitContent,
+                    attachments: finalAttachmentIds
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                toast.success(editingSubmissionId ? 'Submission updated successfully!' : 'Homework submitted successfully!');
+                setSubmitContent('');
+                setSubmitFiles([]);
+                setExistingAttachments([]);
+                setEditingSubmissionId(null);
+                fetchHomeworkDetails();
+            } else {
+                toast.error(result.message);
+            }
+        } catch (error) {
+            toast.error('Failed to submit homework');
+        } finally {
+            setIsSubmittingHomework(false);
+        }
+    };
+
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
             <Spinner size="lg" />
@@ -164,7 +238,7 @@ export default function HomeworkDetailPage() {
                     <div className="flex flex-col items-end">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Due Date</span>
                         <span className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-rose-500" />
+                            <Clock className="w-4 h-4 text-orange-500" />
                             {new Date(homework.dueDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </span>
                     </div>
@@ -207,21 +281,64 @@ export default function HomeworkDetailPage() {
                     </Card>
 
                     {isStaff && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 text-emerald-700">
-                                <CardContent className="p-6 flex flex-col items-center text-center">
-                                    <CheckCircle className="w-8 h-8 mb-2" />
-                                    <span className="text-3xl font-black">{gradedCount}</span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest mt-1">Graded</span>
+                        <div className="space-y-4">
+                            {/* Audience / Assigned To */}
+                            <Card className="border border-slate-100 shadow-sm rounded-3xl overflow-hidden">
+                                <CardContent className="p-6 space-y-3">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Assigned To</h3>
+                                    {(!homework.targetStudents || homework.targetStudents.length === 0) ? (
+                                        <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
+                                            <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
+                                                <Users className="w-5 h-5 text-emerald-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-emerald-800">Whole Class</p>
+                                                <p className="text-[10px] font-bold text-emerald-600">
+                                                    {homework.class?.standard?.name} - {homework.class?.division?.name}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-700 px-3 py-1.5 rounded-full">
+                                                    <User className="w-3 h-3" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest">
+                                                        {homework.targetStudents.length} Specific Student{homework.targetStudents.length !== 1 ? 's' : ''}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                                                {homework.targetStudents.map((student) => (
+                                                    <div key={student.id} className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl">
+                                                        <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-black text-xs">
+                                                            {student.name?.[0]}
+                                                        </div>
+                                                        <span className="text-xs font-bold text-slate-700 truncate">{student.name}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
-                            <Card className="border-none shadow-sm rounded-3xl bg-amber-50 text-amber-700">
-                                <CardContent className="p-6 flex flex-col items-center text-center">
-                                    <AlertCircle className="w-8 h-8 mb-2" />
-                                    <span className="text-3xl font-black">{pendingCount}</span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest mt-1">Pending</span>
-                                </CardContent>
-                            </Card>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 text-emerald-700">
+                                    <CardContent className="p-6 flex flex-col items-center text-center">
+                                        <CheckCircle className="w-8 h-8 mb-2" />
+                                        <span className="text-3xl font-black">{gradedCount}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest mt-1">Graded</span>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-none shadow-sm rounded-3xl bg-amber-50 text-amber-700">
+                                    <CardContent className="p-6 flex flex-col items-center text-center">
+                                        <AlertCircle className="w-8 h-8 mb-2" />
+                                        <span className="text-3xl font-black">{pendingCount}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest mt-1">Pending</span>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -241,7 +358,76 @@ export default function HomeworkDetailPage() {
                     </div>
 
                     <div className="space-y-4">
-                        {submissions.length === 0 ? (
+                        {(!isStaff && (submissions.length === 0 || editingSubmissionId)) ? (
+                            <Card className="border border-slate-200 bg-white rounded-[2rem] shadow-sm overflow-hidden">
+                                <CardContent className="p-8">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-xl font-black text-slate-800">{editingSubmissionId ? 'Edit Your Submission' : 'Submit Your Work'}</h3>
+                                        {editingSubmissionId && (
+                                            <Button variant="ghost" size="sm" onClick={() => {
+                                                setEditingSubmissionId(null);
+                                                setSubmitContent('');
+                                                setExistingAttachments([]);
+                                                setSubmitFiles([]);
+                                            }} className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Cancel Edit</Button>
+                                        )}
+                                    </div>
+                                    <form onSubmit={handleHomeworkSubmit} className="space-y-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-bold text-slate-600">Your Answer / Notes</Label>
+                                            <textarea 
+                                                rows={4}
+                                                className="w-full p-6 rounded-[2rem] border border-slate-200 bg-slate-50 focus:ring-primary/20 transition-all outline-none text-slate-700 font-medium resize-none"
+                                                placeholder="Type your answer here..."
+                                                value={submitContent}
+                                                onChange={e => setSubmitContent(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-bold text-slate-600">Attach Files (Optional)</Label>
+                                            
+                                            {existingAttachments.length > 0 && (
+                                                <div className="mb-4 space-y-2">
+                                                    <Label className="text-xs font-black text-slate-400 uppercase tracking-widest">Existing Files</Label>
+                                                    <div className="space-y-2">
+                                                        {existingAttachments.map(file => (
+                                                            <div key={file.id} className="flex items-center justify-between p-3 bg-primary/5 rounded-xl border border-primary/10">
+                                                                <div className="flex items-center gap-2">
+                                                                    <FileText className="w-4 h-4 text-primary" />
+                                                                    <span className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{file.originalName}</span>
+                                                                </div>
+                                                                <button 
+                                                                    type="button"
+                                                                    onClick={() => setExistingAttachments(prev => prev.filter(f => f.id !== file.id))}
+                                                                    className="text-rose-500 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-colors"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <input 
+                                                type="file" 
+                                                multiple 
+                                                className="w-full h-14 px-4 py-3 rounded-2xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-primary/10 file:text-primary hover:file:bg-primary/20 bg-slate-50 border border-slate-200 text-slate-600 font-medium"
+                                                onChange={e => setSubmitFiles(Array.from(e.target.files))}
+                                            />
+                                        </div>
+                                        <Button 
+                                            type="submit" 
+                                            className="h-14 w-full rounded-2xl bg-primary text-white font-black hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                            disabled={isSubmittingHomework || (!submitContent.trim() && submitFiles.length === 0 && existingAttachments.length === 0)}
+                                        >
+                                            {isSubmittingHomework ? <Spinner size="sm" /> : <Send className="w-4 h-4" />}
+                                            {editingSubmissionId ? 'Save Changes' : 'Submit Assignment'}
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        ) : submissions.length === 0 ? (
                             <Card className="border-2 border-dashed border-slate-200 bg-slate-50/50 rounded-[2rem]">
                                 <CardContent className="flex flex-col items-center justify-center py-20">
                                     <p className="text-slate-400 font-bold">No submissions yet from this class.</p>
@@ -258,10 +444,16 @@ export default function HomeworkDetailPage() {
                                                 </div>
                                                 <div>
                                                     <h3 className="text-lg font-black text-slate-800">{sub.student?.name}</h3>
-                                                    <div className="flex items-center gap-2 text-slate-500 font-bold text-xs uppercase tracking-widest">
+                                                    <div className="flex items-center gap-2 text-slate-500 font-bold text-xs uppercase tracking-widest flex-wrap">
                                                         <span>Roll: {sub.student?.student?.rollNumber || 'N/A'}</span>
                                                         <span>•</span>
-                                                        <span>{new Date(sub.submittedAt).toLocaleDateString()}</span>
+                                                        <span>{new Date(sub.submittedAt || sub.createdAt).toLocaleDateString()}</span>
+                                                        {sub.updatedAt && new Date(sub.updatedAt).getTime() > new Date(sub.submittedAt || sub.createdAt).getTime() + 60000 && (
+                                                            <>
+                                                                <span>•</span>
+                                                                <span className="text-primary italic">Edited: {new Date(sub.updatedAt).toLocaleDateString()}</span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -274,25 +466,30 @@ export default function HomeworkDetailPage() {
                                                     {sub.status}
                                                 </Badge>
                                                 
-                                                {sub.grade && (
-                                                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg border border-primary/20">
-                                                        {sub.grade}
-                                                    </div>
-                                                )}
-
-                                                {isStaff && (
+                                                {isStaff ? (
                                                     <Button 
                                                         className="rounded-2xl bg-slate-800 text-white hover:bg-slate-900 font-black px-6 shadow-lg shadow-black/5"
                                                         onClick={() => {
                                                             setGradingSubmission(sub);
                                                             setGradeData({
                                                                 feedback: sub.feedback || '',
-                                                                grade: sub.grade || '',
                                                                 status: sub.status || 'GRADED'
                                                             });
                                                         }}
                                                     >
-                                                        {sub.status === 'GRADED' ? 'Edit Grade' : 'Grade Now'}
+                                                        {sub.status === 'GRADED' ? 'Edit Status' : 'Update Status'}
+                                                    </Button>
+                                                ) : (
+                                                    <Button 
+                                                        variant="outline"
+                                                        className="rounded-2xl border-slate-200 text-slate-700 font-black px-6"
+                                                        onClick={() => {
+                                                            setEditingSubmissionId(sub.id);
+                                                            setSubmitContent(sub.content || '');
+                                                            setExistingAttachments(sub.attachments || []);
+                                                        }}
+                                                    >
+                                                        Edit Submission
                                                     </Button>
                                                 )}
                                             </div>
@@ -328,36 +525,25 @@ export default function HomeworkDetailPage() {
                     <DialogHeader className="p-8 bg-slate-50 border-b border-slate-100">
                         <DialogTitle className="text-2xl font-black text-slate-800 flex items-center gap-3">
                             <GraduationCap className="w-6 h-6 text-primary" />
-                            Grade Submission: {gradingSubmission?.student?.name}
+                            Update Status: {gradingSubmission?.student?.name}
                         </DialogTitle>
                     </DialogHeader>
                     
                     <form onSubmit={handleGradeSubmit} className="p-8 space-y-6">
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label className="text-sm font-bold text-slate-600">Grade / Score</Label>
-                                <Input 
-                                    placeholder="e.g. A, 9.5, 95%"
-                                    className="h-14 rounded-2xl font-black text-lg border-slate-200 bg-slate-50 focus:ring-primary/20"
-                                    value={gradeData.grade}
-                                    onChange={(e) => setGradeData({...gradeData, grade: e.target.value})}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-sm font-bold text-slate-600">Status</Label>
-                                <Select 
-                                    value={gradeData.status}
-                                    onValueChange={(val) => setGradeData({...gradeData, status: val})}
-                                >
-                                    <SelectTrigger className="h-14 rounded-2xl border-slate-200 bg-slate-50">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="GRADED">Graded</SelectItem>
-                                        <SelectItem value="REJECTED">Rejected</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-bold text-slate-600">Status</Label>
+                            <Select 
+                                value={gradeData.status}
+                                onValueChange={(val) => setGradeData({...gradeData, status: val})}
+                            >
+                                <SelectTrigger className="h-14 rounded-2xl border-slate-200 bg-slate-50">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="GRADED">Graded</SelectItem>
+                                    <SelectItem value="REJECTED">Rejected</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">

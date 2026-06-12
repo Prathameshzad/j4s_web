@@ -39,7 +39,8 @@ const Table = ({
   showAdd = true,
   actions = null,
   pagination = null,
-  onPageChange = () => { }
+  onPageChange = () => { },
+  rowActions = null
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
@@ -218,9 +219,11 @@ const Table = ({
                     </TableCell>
                   ))}
                   <TableCell className="px-5 py-4 text-right">
-                    <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-all text-slate-400 hover:text-primary">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </button>
+                    {rowActions ? rowActions(row) : (
+                      <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-all text-slate-400 hover:text-primary">
+                        <MoreHorizontal className="h-5 w-5" />
+                      </button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

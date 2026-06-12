@@ -42,7 +42,7 @@ export const SidebarProvider = ({ children, ...props }) => {
 
   return (
     <SidebarContext.Provider value={{ open, setOpen, openMobile, setOpenMobile, isMobile, toggleSidebar, isHovered, setHovered }}>
-      <div className="flex min-h-screen w-full overflow-hidden bg-background">
+      <div className="flex h-[100dvh] w-full overflow-hidden bg-background">
         {children}
       </div>
     </SidebarContext.Provider>
@@ -241,7 +241,7 @@ export const SidebarGroupContent = ({ children, className = '', ...props }) => (
  * @param {string} [props.className]
  */
 export const SidebarInset = ({ children, className = '', ...props }) => (
-  <div className={`flex flex-1 min-w-0 flex-col bg-slate-50/50 dark:bg-slate-950/50 transition-all duration-300 ${className}`} {...props}>
+  <div className={`flex flex-1 min-w-0 flex-col overflow-y-auto bg-slate-50/50 dark:bg-slate-950/50 transition-all duration-300 ${className}`} {...props}>
     {children}
   </div>
 );

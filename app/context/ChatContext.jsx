@@ -112,14 +112,15 @@ export const ChatProvider = ({ children }) => {
         }
     }, [activeRoomId, token]);
 
-    const sendMessage = useCallback((roomId, content, replyToId = null) => {
+    const sendMessage = useCallback((roomId, content, replyToId = null, type = 'TEXT') => {
         if (socket && connected) {
             const authId = selectedUserId || user.id;
             socket.emit('send_message', {
                 roomId,
                 senderId: authId,
                 content,
-                replyToId
+                replyToId,
+                type
             });
         } else {
             console.warn('⚠️ Chat: Cannot send message, socket not connected');
@@ -137,6 +138,27 @@ export const ChatProvider = ({ children }) => {
         }
     }, [socket, connected, user, selectedUserId]);
 
+    const markRoomAsRead = useCallback(async (roomId) => {
+        if (!token) return;
+        try {
+            let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/web';
+            if (typeof window !== 'undefined' && backendUrl.includes('localhost') && !window.location.hostname.includes('localhost')) {
+                backendUrl = backendUrl.replace('localhost', window.location.hostname);
+            }
+            const cleanBaseUrl = backendUrl.endsWith('/api/web') ? backendUrl.replace('/api/web', '') : backendUrl;
+            const readUrl = `${cleanBaseUrl}/api/web/chat/rooms/${roomId}/read`;
+
+            await axios.post(readUrl, {}, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Update local state: clear unread count but keep lastReadAt intact for the UI divider to stay
+            setRooms(prev => prev.map(r => r.id === roomId ? { ...r, unreadCount: 0 } : r));
+        } catch (error) {
+            console.error('Error marking room as read:', error);
+        }
+    }, [token]);
+
     return (
         <ChatContext.Provider value={{ 
             socket, 
@@ -146,6 +168,7 @@ export const ChatProvider = ({ children }) => {
             setActiveRoomId, 
             sendMessage,
             editMessage,
+            markRoomAsRead,
             connected
         }}>
             {children}

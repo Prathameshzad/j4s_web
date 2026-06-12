@@ -42,13 +42,20 @@ import {
 } from "@/component/ui/CustomUI"
 
 const ChatPage = () => {
-    const { rooms, messages, sendMessage, editMessage, socket } = useChat();
+    const { rooms, messages, sendMessage, editMessage, socket, setActiveRoomId, markRoomAsRead } = useChat();
     const { user, token, selectedUserId } = useAuth();
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [input, setInput] = useState('');
-    const [localMessages, setLocalMessages] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const scrollRef = useRef();
+    const fileInputRef = useRef();
+    
+    // Emoji picker state
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    // Derived messages
+    const localMessages = selectedRoom ? (messages[selectedRoom.id] || []) : [];
 
     // Advanced Chat State
     const [replyingTo, setReplyingTo] = useState(null);
@@ -58,34 +65,55 @@ const ChatPage = () => {
     const [viewerOpen, setViewerOpen] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
 
-    // Fetch history when room selected
+    // Set active room id in context and mark as read
     useEffect(() => {
         if (selectedRoom) {
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/rooms/${selectedRoom.id}/messages`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setLocalMessages(data.data);
-                }
-            });
+            setActiveRoomId(selectedRoom.id);
+            markRoomAsRead(selectedRoom.id);
+        } else {
+            setActiveRoomId(null);
         }
-    }, [selectedRoom, token]);
+    }, [selectedRoom, setActiveRoomId, markRoomAsRead]);
 
-    // Update messages from context
-    useEffect(() => {
-        if (selectedRoom && messages[selectedRoom.id]) {
-            setLocalMessages(messages[selectedRoom.id]);
-        }
-    }, [messages, selectedRoom]);
-
-    // Auto scroll
+    // Auto scroll when new messages arrive or when room changes
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [localMessages]);
+    }, [localMessages.length, selectedRoom]);
+
+    const handleFileUpload = async (e) => {
+        const files = e.target.files;
+        if (!files || files.length === 0 || !selectedRoom) return;
+        
+        setIsUploading(true);
+        const formData = new FormData();
+        Array.from(files).forEach(file => {
+            formData.append('files', file);
+        });
+
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL.replace('/api/web', '');
+            const response = await fetch(`${baseUrl}/api/app/media/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                // Send a message for each uploaded media
+                data.data.forEach(media => {
+                    sendMessage(selectedRoom.id, media.url, replyingTo?.id, media.type);
+                });
+                setReplyingTo(null);
+            }
+        } catch (error) {
+            console.error('Error uploading media:', error);
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     const handleSend = (e) => {
         e.preventDefault();
@@ -119,10 +147,10 @@ const ChatPage = () => {
     );
 
     return (
-        <div className="flex h-[calc(100vh-120px)] overflow-hidden bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex h-[calc(100vh-165px)] overflow-hidden bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             {/* Sidebar: Chat List */}
-            <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 ${selectedRoom ? 'hidden md:flex' : 'flex'}`}>
-                <div className="p-6 pb-4">
+            <div className={`w-full md:w-80 lg:w-96 flex flex-col h-full min-h-0 border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 ${selectedRoom ? 'hidden md:flex' : 'flex'}`}>
+                <div className="p-6 pb-4 shrink-0">
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                             Messages
@@ -142,8 +170,8 @@ const ChatPage = () => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-4 min-h-0 pb-4">
-                    <div className="space-y-2">
+                <div className="flex-1 overflow-y-auto overscroll-contain">
+                    <div className="space-y-2 px-4 pb-4">
                         {filteredRooms.map(room => (
                             <button
                                 key={room.id}
@@ -166,18 +194,46 @@ const ChatPage = () => {
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex items-center justify-between mb-1">
                                         <span className="font-semibold truncate text-sm text-slate-900 dark:text-slate-100">{room.displayName || room.name || 'Group Chat'}</span>
-                                        <span className="text-[10px] text-slate-500">
-                                            {getLatestMessageTime(room) > 0 
-                                                ? new Date(getLatestMessageTime(room)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                                                : ''}
-                                        </span>
+                                        <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                                            <span className="text-[10px] text-slate-500">
+                                                {getLatestMessageTime(room) > 0 
+                                                    ? new Date(getLatestMessageTime(room)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                                                    : ''}
+                                            </span>
+                                            {room.unreadCount > 0 && (
+                                                <Badge className="h-5 min-w-5 rounded-full bg-green-500 hover:bg-green-600 text-[10px] flex items-center justify-center px-1">
+                                                    {room.unreadCount}
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <p className="text-xs text-slate-500 truncate">
                                             {(() => {
                                                 const contextMsgs = messages[room.id] || [];
-                                                const lastMsg = contextMsgs[contextMsgs.length - 1] || room.messages?.[0];
-                                                return lastMsg ? lastMsg.content : 'No messages yet';
+                                                const lastMsg = contextMsgs[contextMsgs.length - 1];
+                                                
+                                                let displayContent = room.lastMessage || 'No messages yet';
+                                                let prefix = room.lastMessageSender ? `${room.lastMessageSender}: ` : '';
+                                                
+                                                if (lastMsg) {
+                                                    displayContent = lastMsg.type === 'IMAGE' ? '📷 Photo' : 
+                                                                    lastMsg.type === 'VIDEO' ? '🎥 Video' : 
+                                                                    (lastMsg.type === 'FILE' || lastMsg.type === 'AUDIO') ? '📁 File' : 
+                                                                    lastMsg.content;
+                                                    prefix = lastMsg.sender?.name ? `${lastMsg.sender.name}: ` : '';
+                                                } else if (displayContent !== 'No messages yet') {
+                                                    if (displayContent.match(/\.(jpeg|jpg|gif|png|webp)$/i)) displayContent = '📷 Photo';
+                                                    else if (displayContent.match(/\.(mp4|mkv|avi|mov)$/i)) displayContent = '🎥 Video';
+                                                    else if (displayContent.match(/\.(pdf|doc|docx|txt)$/i)) displayContent = '📁 File';
+                                                }
+
+                                                return (
+                                                    <>
+                                                        {prefix && <span className="font-semibold text-slate-700 dark:text-slate-300">{prefix}</span>}
+                                                        {displayContent}
+                                                    </>
+                                                );
                                             })()}
                                         </p>
                                         {selectedRoom?.id !== room.id && <div className="h-2 w-2 rounded-full bg-orange-500/20"></div>}
@@ -196,11 +252,11 @@ const ChatPage = () => {
             </div>
 
             {/* Main: Chat Window */}
-            <div className={`flex-1 flex flex-col bg-white dark:bg-slate-950 ${!selectedRoom ? 'hidden md:flex' : 'flex'}`}>
+            <div className={`flex-1 flex flex-col h-full min-w-0 min-h-0 bg-white dark:bg-slate-950 ${!selectedRoom ? 'hidden md:flex' : 'flex'}`}>
                 {selectedRoom ? (
                     <>
                         {/* Chat Header */}
-                        <div className="h-20 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                        <div className="h-20 shrink-0 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
                             <div className="flex items-center gap-4">
                                 <Button 
                                     variant="ghost" 
@@ -240,18 +296,48 @@ const ChatPage = () => {
                         </div>
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-6 min-h-0 bg-slate-50 dark:bg-slate-950/50">
-                            <div className="space-y-6">
-                                <div className="flex justify-center">
-                                    <Badge variant="secondary" className="rounded-full px-3 py-0.5 text-xs font-normal text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                                        Today
-                                    </Badge>
-                                </div>
+                        <div className="flex-1 overflow-y-auto overscroll-contain bg-slate-50 dark:bg-slate-950/50">
+                            <div className="space-y-6 p-6">
                                 {localMessages.map((msg, idx) => {
                                     const currentId = selectedUserId || user?.id;
                                     const isMe = msg.senderId === currentId || msg.sender?.id === currentId;
+                                    const showDateDivider = idx === 0 || new Date(msg.createdAt).toDateString() !== new Date(localMessages[idx - 1].createdAt).toDateString();
+                                    
+                                    const formatDateDivider = (dateString) => {
+                                        const date = new Date(dateString);
+                                        const today = new Date();
+                                        const yesterday = new Date(today);
+                                        yesterday.setDate(yesterday.getDate() - 1);
+                                        if (date.toDateString() === today.toDateString()) return 'Today';
+                                        if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+                                        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                                    };
+
+                                    // Check if this is the first unread message
+                                    const isUnread = !isMe && new Date(msg.createdAt).getTime() > new Date(selectedRoom.lastReadAt || 0).getTime();
+                                    const prevMsg = idx > 0 ? localMessages[idx - 1] : null;
+                                    const isFirstUnread = isUnread && (!prevMsg || new Date(prevMsg.createdAt).getTime() <= new Date(selectedRoom.lastReadAt || 0).getTime());
+
                                     return (
-                                        <div key={msg.id} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-4 duration-500 group`} style={{ animationDelay: `${idx * 50}ms` }}>
+                                        <React.Fragment key={msg.id}>
+                                            {showDateDivider && (
+                                                <div className="flex justify-center my-4">
+                                                    <Badge variant="secondary" className="rounded-full px-3 py-0.5 text-xs font-normal text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                                                        {formatDateDivider(msg.createdAt)}
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                            {isFirstUnread && (
+                                                <div className="flex justify-center my-4 relative">
+                                                    <div className="absolute inset-0 flex items-center">
+                                                        <div className="w-full border-t border-green-500/30"></div>
+                                                    </div>
+                                                    <Badge variant="secondary" className="relative rounded-full px-3 py-0.5 text-[11px] font-medium text-green-600 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 uppercase tracking-widest">
+                                                        Unread Messages
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                            <div className={`flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-4 duration-500 group`} style={{ animationDelay: `${idx * 50}ms` }}>
                                             <Avatar className="h-8 w-8 self-end mb-4">
                                                 <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.senderId}`} />
                                                 <AvatarFallback className="text-xs bg-slate-200">{msg.sender?.name?.charAt(0)}</AvatarFallback>
@@ -314,6 +400,11 @@ const ChatPage = () => {
                                                                     alt="Chat attachment" 
                                                                     className="max-w-full"
                                                                     style={{ maxHeight: '300px', objectFit: 'contain' }}
+                                                                    onLoad={() => {
+                                                                        if (scrollRef.current) {
+                                                                            scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+                                                                        }
+                                                                    }}
                                                                 />
                                                             </div>
                                                         </div>
@@ -347,6 +438,7 @@ const ChatPage = () => {
                                                 </div>
                                             </div>
                                         </div>
+                                        </React.Fragment>
                                     );
                                 })}
                                 <div ref={scrollRef} className="h-px"></div>
@@ -354,7 +446,7 @@ const ChatPage = () => {
                         </div>
 
                         {/* Message Input Container */}
-                        <div className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
+                        <div className="shrink-0 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
                             {/* Reply/Edit Preview */}
                             {(replyingTo || editingMessage) && (
                                 <div className="px-6 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between animate-in slide-in-from-bottom-2">
@@ -384,13 +476,52 @@ const ChatPage = () => {
                             )}
 
                             {/* Main Input Form */}
-                            <div className="p-4">
+                            <div className="p-4 relative">
+                                {showEmojiPicker && (
+                                    <div className="absolute bottom-20 left-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-3 z-50 animate-in fade-in slide-in-from-bottom-2">
+                                        <div className="grid grid-cols-6 gap-2">
+                                            {['😀','😃','😄','😁','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾'].map(emoji => (
+                                                <button 
+                                                    key={emoji} 
+                                                    type="button"
+                                                    className="hover:bg-slate-100 dark:hover:bg-slate-800 p-1.5 rounded text-xl"
+                                                    onClick={() => setInput(prev => prev + emoji)}
+                                                >
+                                                    {emoji}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <input 
+                                    type="file" 
+                                    multiple 
+                                    accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
+                                    className="hidden" 
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                />
+                                
                                 <form onSubmit={handleSend} className="flex items-center gap-3 max-w-5xl mx-auto">
                                     <div className="flex items-center gap-1">
-                                        <Button type="button" variant="ghost" size="icon" className="text-slate-500 hover:text-orange-500 transition-colors">
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                            className={`text-slate-500 hover:text-orange-500 transition-colors ${showEmojiPicker ? 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' : ''}`}
+                                        >
                                             <Smile size={22} />
                                         </Button>
-                                        <Button type="button" variant="ghost" size="icon" className="text-slate-500 hover:text-orange-500 transition-colors">
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploading}
+                                            className="text-slate-500 hover:text-orange-500 transition-colors disabled:opacity-50"
+                                        >
                                             <Paperclip size={22} />
                                         </Button>
                                     </div>
@@ -398,7 +529,8 @@ const ChatPage = () => {
                                         <Input 
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
-                                            placeholder={editingMessage ? "Edit your message..." : "Type a message..."}
+                                            placeholder={isUploading ? "Uploading media..." : (editingMessage ? "Edit your message..." : "Type a message...")}
+                                            disabled={isUploading}
                                             className="w-full bg-slate-100 dark:bg-slate-900 border-transparent focus-visible:ring-1 focus-visible:ring-orange-200 rounded-2xl px-5 h-12 text-[15px]"
                                         />
                                     </div>

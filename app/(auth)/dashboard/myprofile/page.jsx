@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
 import {
   Loader2, User, Mail, Phone, Briefcase, GraduationCap,
-  Users, MapPin, Calendar, Camera, BookOpen, Clock, 
+  Users, MapPin, Calendar, Camera, BookOpen, Clock,
   LifeBuoy, Send, ShieldCheck, Star, Sparkles, Building,
   ArrowRight, CreditCard, ClipboardCheck, MessageSquare,
   Shield, Info, ChevronRight
@@ -108,7 +108,7 @@ export default function MyProfile() {
       <Card className="relative overflow-hidden border-none shadow-xl bg-slate-900 rounded-[2.5rem] p-8 md:p-12">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500 opacity-5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
-        
+
         <div className="relative flex flex-col md:flex-row items-center md:items-end gap-8">
           <div className="relative">
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-white p-1.5 shadow-2xl">
@@ -187,7 +187,7 @@ export default function MyProfile() {
 
         {/* Detailed Info Column */}
         <div className="lg:col-span-8 space-y-8">
-          
+
           {/* TEACHER: Assigned Classes */}
           {isTeacher && (
             <section className="space-y-4">
@@ -256,7 +256,7 @@ export default function MyProfile() {
                 {profile?.children?.length > 0 ? profile.children.map((child, i) => (
                   <Card key={i} className="p-6 rounded-3xl border-slate-100 hover:shadow-lg transition-all group overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[3rem] -mr-6 -mt-6 transition-transform group-hover:scale-110" />
-                    
+
                     <div className="flex items-center gap-4 mb-6">
                       <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-xl font-black text-primary border border-slate-100">
                         {child.name?.charAt(0)}
@@ -295,10 +295,10 @@ export default function MyProfile() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Category</label>
-                    <select 
+                    <select
                       className="w-full h-12 px-4 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-primary outline-none text-xs font-bold transition-all"
                       value={supportData.category}
-                      onChange={(e) => setSupportData({...supportData, category: e.target.value})}
+                      onChange={(e) => setSupportData({ ...supportData, category: e.target.value })}
                     >
                       <option value="TECHNICAL">Technical Issue</option>
                       <option value="ACADEMIC">Academic Support</option>
@@ -308,10 +308,10 @@ export default function MyProfile() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Priority</label>
-                    <select 
+                    <select
                       className="w-full h-12 px-4 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-primary outline-none text-xs font-bold transition-all"
                       value={supportData.priority}
-                      onChange={(e) => setSupportData({...supportData, priority: e.target.value})}
+                      onChange={(e) => setSupportData({ ...supportData, priority: e.target.value })}
                     >
                       <option value="LOW">Low</option>
                       <option value="MEDIUM">Medium</option>
@@ -322,21 +322,21 @@ export default function MyProfile() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Subject</label>
-                  <input 
+                  <input
                     className="w-full h-12 px-4 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-primary outline-none text-sm font-bold transition-all"
                     placeholder="Short summary of your issue"
                     value={supportData.subject}
-                    onChange={(e) => setSupportData({...supportData, subject: e.target.value})}
+                    onChange={(e) => setSupportData({ ...supportData, subject: e.target.value })}
                     required
                   />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Detailed Description</label>
-                  <textarea 
+                  <textarea
                     className="w-full min-h-[120px] p-4 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-primary outline-none text-sm font-medium transition-all"
                     placeholder="Describe your concern in detail..."
                     value={supportData.message}
-                    onChange={(e) => setSupportData({...supportData, message: e.target.value})}
+                    onChange={(e) => setSupportData({ ...supportData, message: e.target.value })}
                     required
                   />
                 </div>

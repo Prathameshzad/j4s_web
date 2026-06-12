@@ -20,6 +20,7 @@ import {
     Edit2, 
     Trash2, 
     Users, 
+    User,
     ChevronRight, 
     Book, 
     Clock,
@@ -207,6 +208,23 @@ export default function HomeworkPage() {
                                             </div>
                                         </div>
 
+                                        {/* Audience Badge */}
+                                        {isStaff && (
+                                            <div className="flex items-center gap-2">
+                                                {(!hw.targetStudents || hw.targetStudents.length === 0) ? (
+                                                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full">
+                                                        <Users size={11} />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest">Whole Class</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-700 px-3 py-1.5 rounded-full">
+                                                        <User size={11} />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest">{hw.targetStudents.length} Student{hw.targetStudents.length !== 1 ? 's' : ''}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
                                         <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100">
                                             <div className="space-y-1">
                                                 <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Class</p>
@@ -224,7 +242,7 @@ export default function HomeworkPage() {
 
                                         <div className="flex items-center justify-between pt-2">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-md bg-rose-50 flex items-center justify-center text-rose-600 border border-rose-100">
+                                                <div className="w-9 h-9 rounded-md bg-orange-50 flex items-center justify-center text-orange-500 border border-orange-100">
                                                     <Clock size={16} />
                                                 </div>
                                                 <div className="flex flex-col">

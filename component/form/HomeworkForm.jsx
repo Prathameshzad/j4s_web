@@ -35,6 +35,14 @@ export default function HomeworkForm({ initialData, isEdit = false }) {
     const [attachments, setAttachments] = useState(initialData?.attachments || []);
     const [selectedFiles, setSelectedFiles] = useState([]);
     
+    const [classStudents, setClassStudents] = useState([]);
+    const [targetStudentIds, setTargetStudentIds] = useState(
+        initialData?.targetStudents ? initialData.targetStudents.map(s => s.id) : []
+    );
+    const [assignToAll, setAssignToAll] = useState(
+        !initialData?.targetStudents || initialData.targetStudents.length === 0
+    );
+    
     const [formData, setFormData] = useState({
         classId: initialData?.classId || '',
         subjectId: initialData?.subjectId || '',
@@ -87,7 +95,34 @@ export default function HomeworkForm({ initialData, isEdit = false }) {
         setSelectedPairing(val);
         const [classId, subjectId] = val.split('_');
         setFormData(prev => ({ ...prev, classId, subjectId }));
+        fetchClassStudents(classId);
     };
+
+    const fetchClassStudents = async (classId) => {
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/web';
+            const res = await fetch(`${baseUrl}/homework/meta/class-students/${classId}`, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`, 
+                    'x-selected-role': selectedRole, 
+                    'x-selected-user-id': selectedUserId 
+                }
+            });
+            const result = await res.json();
+            if (result.success) {
+                setClassStudents(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching students:', error);
+        }
+    };
+
+    // Also fetch students on initial load if editing
+    useEffect(() => {
+        if (formData.classId && token) {
+            fetchClassStudents(formData.classId);
+        }
+    }, [formData.classId, token]);
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
@@ -164,7 +199,8 @@ export default function HomeworkForm({ initialData, isEdit = false }) {
                 subjectId: formData.subjectId,
                 type: 'HOMEWORK',
                 dueDate: new Date(formData.dueDate).toISOString(),
-                attachments: [...attachments.map(a => a.id), ...newlyUploadedIds]
+                attachments: [...attachments.map(a => a.id), ...newlyUploadedIds],
+                targetStudentIds: assignToAll ? [] : targetStudentIds
             };
 
             const url = isEdit ? `${baseUrl}/homework/${initialData.id}` : `${baseUrl}/homework`;
@@ -278,6 +314,67 @@ export default function HomeworkForm({ initialData, isEdit = false }) {
                             onChange={(e) => setFormData({...formData, content: e.target.value})}
                         />
                     </div>
+
+                    {/* 4.5 Target Audience */}
+                    {formData.classId && classStudents.length > 0 && (
+                        <div className="space-y-4 bg-slate-50/50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800">
+                            <Label className="text-sm font-bold text-slate-600 dark:text-slate-400 ml-1">Assign To</Label>
+                            
+                            <div className="flex flex-wrap gap-4 mb-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="radio" 
+                                        name="assignType" 
+                                        checked={assignToAll} 
+                                        onChange={() => {
+                                            setAssignToAll(true);
+                                            setTargetStudentIds([]);
+                                        }}
+                                        className="w-4 h-4 text-primary"
+                                    />
+                                    <span className="text-sm font-bold text-slate-700">Entire Class</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="radio" 
+                                        name="assignType" 
+                                        checked={!assignToAll} 
+                                        onChange={() => setAssignToAll(false)}
+                                        className="w-4 h-4 text-primary"
+                                    />
+                                    <span className="text-sm font-bold text-slate-700">Specific Students</span>
+                                </label>
+                            </div>
+
+                            {!assignToAll && (
+                                <div className="space-y-2 mt-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar border border-slate-200 dark:border-slate-700 rounded-xl p-2 bg-white dark:bg-slate-950">
+                                    {classStudents.map(student => (
+                                        <label key={student.id} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg cursor-pointer border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-all">
+                                            <input 
+                                                type="checkbox"
+                                                className="w-5 h-5 rounded text-primary focus:ring-primary/20"
+                                                checked={targetStudentIds.includes(student.id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setTargetStudentIds([...targetStudentIds, student.id]);
+                                                    } else {
+                                                        setTargetStudentIds(targetStudentIds.filter(id => id !== student.id));
+                                                    }
+                                                }}
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{student.name}</span>
+                                                <span className="text-xs font-semibold text-slate-400">Roll: {student.rollNumber || 'N/A'}</span>
+                                            </div>
+                                        </label>
+                                    ))}
+                                    {targetStudentIds.length === 0 && (
+                                        <p className="text-xs text-rose-500 font-bold p-2">Please select at least one student.</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* 5. File Uploadation System */}
                     <div className="space-y-3">

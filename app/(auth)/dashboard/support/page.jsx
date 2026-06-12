@@ -220,7 +220,7 @@ export default function SupportPage() {
                 </div>
                 <div>
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-[2px] mb-1">Call Support</p>
-                  <p className="text-lg font-black tracking-tight">+91 98765 43210</p>
+                  <p className="text-lg font-black tracking-tight">+91 7 8989-1-4040</p>
                 </div>
               </div>
               <div className="flex items-center gap-5 group">

@@ -8,10 +8,18 @@ import {
     ClipboardCheck,
     DollarSign,
     LifeBuoy,
-    BookOpen
+    BookOpen,
+    TrendingUp
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
+    {
+        id: 'performance',
+        label: 'Exam Dashboard',
+        icon: TrendingUp,
+        href: '/dashboard/performance',
+        roles: ['STUDENT', 'PARENT']
+    },
     {
         id: 'dashboard',
         label: 'Dashboard',
@@ -81,6 +89,13 @@ export const NAV_ITEMS = [
         icon: Clock,
         href: '/dashboard/timetable',
         roles: ['STUDENT', 'STAFF', 'PARENT']
+    },
+    {
+        id: 'exam',
+        label: 'Examinations',
+        icon: ClipboardCheck,
+        href: '/dashboard/exam',
+        roles: ['STAFF']
     },
     {
         id: 'support',

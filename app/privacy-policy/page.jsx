@@ -4,16 +4,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '@/component/Navbar';
 import Footer from '@/components/landing/Footer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Shield, 
-  Eye, 
-  Lock, 
-  Database, 
-  Users, 
-  UserCheck, 
-  Globe, 
+import {
+  Shield,
+  Eye,
+  Lock,
+  Database,
+  Users,
+  UserCheck,
+  Globe,
   Search,
-  BookOpen, 
+  BookOpen,
   Calendar,
   CheckCircle,
   AlertCircle,
@@ -189,7 +189,7 @@ We do not collect personal information from minors independently. Parents and le
 If you have questions, grievances, or requests regarding this Privacy Policy or your data practices, please reach out to our designated Data Protection Officer:`,
     contactDetails: {
       email: 'privacy@shikshadisha.in',
-      phone: '+91 98765 43210',
+      phone: '+91 7 8989-1-4040',
       address: 'Data Protection Officer, Shiksha Disha, 123 Tech Park, Hitech City, Hyderabad, India'
     }
   }
@@ -253,7 +253,7 @@ export default function PrivacyPolicy() {
 
   const filteredSections = SECTIONS.filter(section => {
     const matchesSearch = section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          section.content.toLowerCase().includes(searchQuery.toLowerCase());
+      section.content.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
 
@@ -267,7 +267,7 @@ export default function PrivacyPolicy() {
           {/* Subtle Background Glows */}
           <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
           <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-orange-600/10 blur-3xl" />
-          
+
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -308,7 +308,7 @@ export default function PrivacyPolicy() {
                 Last Updated: May 18, 2026
               </span>
               <span className="h-1.5 w-1.5 rounded-full bg-slate-700 hidden sm:inline" />
-              <button 
+              <button
                 onClick={handlePrint}
                 className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
               >
@@ -322,7 +322,7 @@ export default function PrivacyPolicy() {
         {/* Interactive Content Grid */}
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
-            
+
             {/* Sidebar Table of Contents */}
             <aside className="lg:col-span-1 lg:sticky lg:top-28 lg:self-start hidden lg:block">
               {/* Search Bar */}
@@ -341,7 +341,7 @@ export default function PrivacyPolicy() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Sections
                 </h3>
-                
+
                 <ul className="mt-4 space-y-2">
                   {SECTIONS.map((section) => {
                     const Icon = section.icon;
@@ -350,11 +350,10 @@ export default function PrivacyPolicy() {
                       <li key={section.id}>
                         <button
                           onClick={() => scrollToSection(section.id)}
-                          className={`group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all cursor-pointer ${
-                            isActive
+                          className={`group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all cursor-pointer ${isActive
                               ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                               : 'text-slate-600 hover:bg-slate-100 hover:text-orange-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
-                          }`}
+                            }`}
                         >
                           <Icon className={`h-4.5 w-4.5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-orange-500 dark:group-hover:text-white'}`} />
                           <span className="truncate">{section.title.split('. ')[1]}</span>
@@ -410,8 +409,8 @@ export default function PrivacyPolicy() {
                         {section.details && (
                           <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
                             {section.details.map((detail, dIdx) => (
-                              <div 
-                                key={dIdx} 
+                              <div
+                                key={dIdx}
                                 className="rounded-2xl border border-slate-100 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-950/40"
                               >
                                 <h4 className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
@@ -523,7 +522,7 @@ export default function PrivacyPolicy() {
                     <AlertCircle className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-700" />
                     <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">No sections found</h3>
                     <p className="mt-2 text-slate-500 max-w-sm mx-auto text-sm">We couldn't find any policy sections matching your search query. Please try searching for keywords like "data", "encryption" or "cookie".</p>
-                    <button 
+                    <button
                       onClick={() => setSearchQuery('')}
                       className="mt-6 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-xl shadow-orange-500/10 hover:bg-orange-600 transition-colors"
                     >

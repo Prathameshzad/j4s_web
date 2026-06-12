@@ -3,20 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
-import { 
-    Button, 
-    Card, 
-    CardContent, 
+import {
+    Button,
+    Card,
+    CardContent,
     Badge,
     Spinner,
 } from '@/component/ui/CustomUI';
-import { 
-    Plus, 
-    Bell, 
-    Calendar, 
-    Edit2, 
-    Trash2, 
-    User, 
+import {
+    Plus,
+    Bell,
+    Calendar,
+    Edit2,
+    Trash2,
+    User,
     ChevronRight,
     ArrowUpRight,
     Info,
@@ -45,7 +45,7 @@ export default function NoticePage() {
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL;
             const response = await fetch(`${baseUrl}/notice`, {
-                headers: { 
+                headers: {
                     'Authorization': `Bearer ${token}`,
                     'x-selected-role': selectedRole,
                     'x-selected-user-id': selectedUserId || ''
@@ -65,12 +65,12 @@ export default function NoticePage() {
 
     const handleDelete = async (id) => {
         if (!confirm('Are you sure you want to delete this notice?')) return;
-        
+
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL;
             const response = await fetch(`${baseUrl}/notice/${id}`, {
                 method: 'DELETE',
-                headers: { 
+                headers: {
                     'Authorization': `Bearer ${token}`,
                     'x-selected-role': selectedRole,
                     'x-selected-user-id': selectedUserId || ''
@@ -95,7 +95,7 @@ export default function NoticePage() {
         return scheduledDate >= today;
     };
 
-    const filteredNotices = notices.filter(notice => 
+    const filteredNotices = notices.filter(notice =>
         notice.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         notice.content.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -126,7 +126,7 @@ export default function NoticePage() {
                         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Notices</h1>
                     </div>
                     <p className="text-slate-500 font-medium text-sm max-w-md">
-                        {selectedRole === 'STAFF' 
+                        {selectedRole === 'STAFF'
                             ? "Manage and publish important announcements for the institution."
                             : `Stay updated with the latest news and announcements.`}
                     </p>
@@ -135,17 +135,17 @@ export default function NoticePage() {
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                     <div className="relative w-full sm:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder="Search notices..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                     </div>
-                    
+
                     {selectedRole === 'STAFF' && (
-                        <Button 
+                        <Button
                             onClick={() => router.push('/dashboard/notice/add')}
                             className="w-full sm:w-auto h-11 rounded-xl px-6 font-bold text-sm shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                         >
@@ -160,7 +160,7 @@ export default function NoticePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 <AnimatePresence mode='popLayout'>
                     {filteredNotices.length === 0 ? (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             className="col-span-full"
@@ -175,8 +175,8 @@ export default function NoticePage() {
                                         {searchQuery ? "We couldn't find any notices matching your search." : "There are currently no announcements to display."}
                                     </p>
                                     {searchQuery && (
-                                        <Button 
-                                            variant="ghost" 
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => setSearchQuery('')}
                                             className="mt-6 text-primary font-bold hover:bg-primary/5"
                                         >
@@ -199,7 +199,7 @@ export default function NoticePage() {
                                 <Card className="group h-full flex flex-col bg-white border-slate-200/60 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 rounded-3xl overflow-hidden relative">
                                     {/* Decorative Gradient Top */}
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    
+
                                     <div className="p-6 flex-1 flex flex-col">
                                         <div className="flex items-start justify-between mb-6">
                                             <div className="flex flex-wrap gap-2">
@@ -215,17 +215,17 @@ export default function NoticePage() {
 
                                             {selectedRole === 'STAFF' && notice.senderId === selectedUserId && isEditable(notice.scheduledAt) && (
                                                 <div className="flex items-center gap-1">
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
                                                         className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
                                                         onClick={() => router.push(`/dashboard/notice/${notice.id}`)}
                                                     >
                                                         <Edit2 size={14} />
                                                     </Button>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
                                                         className="h-8 w-8 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-colors"
                                                         onClick={() => handleDelete(notice.id)}
                                                     >
@@ -260,10 +260,10 @@ export default function NoticePage() {
                                                 <div className="flex items-center gap-1.5 text-slate-800">
                                                     <Clock size={12} className="text-slate-400" />
                                                     <span className="text-xs font-bold whitespace-nowrap">
-                                                        {new Date(notice.scheduledAt).toLocaleDateString(undefined, { 
-                                                            day: 'numeric', 
-                                                            month: 'short', 
-                                                            year: 'numeric' 
+                                                        {new Date(notice.scheduledAt).toLocaleDateString(undefined, {
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric'
                                                         })}
                                                     </span>
                                                 </div>
@@ -288,7 +288,7 @@ export default function NoticePage() {
                         <p className="text-xs text-slate-500 leading-relaxed font-medium">Get verified news directly from your school administration and teachers.</p>
                     </div>
                 </div>
-                
+
                 <div className="flex gap-4 p-6 bg-slate-50 rounded-3xl border border-slate-100 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
                     <div className="w-12 h-12 shrink-0 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
                         <Layout size={24} />

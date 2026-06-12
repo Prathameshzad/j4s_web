@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Sparkles } from 'lucide-react';
 import { Button } from '@/component/ui/CustomUI';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -21,134 +21,170 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="py-24 bg-white dark:bg-slate-900">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
-          {/* Info Side */}
-          <div>
+    <section id="contact" className="py-28 bg-white dark:bg-slate-900 overflow-hidden relative">
+      {/* Background glow highlights */}
+      <div className="absolute top-[20%] left-[-10%] -z-10 h-[500px] w-[500px] rounded-full bg-orange-500/5 blur-3xl" />
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+
+        {/* Split Layout Container */}
+        <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 items-center">
+
+          {/* Info Side (5 Columns) */}
+          <div className="lg:col-span-5">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50/60 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-orange-500 dark:border-orange-500/10 dark:bg-orange-950/20"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Get In Touch</span>
+            </motion.div>
+
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-base font-semibold uppercase tracking-wider text-orange-500"
-            >
-              Contact Us
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="mt-2 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-5xl font-caveat"
+              className="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl"
             >
-              Let's Scale Your School Together
-            </motion.p>
+              Let's Scale Your <br />
+              <span className="font-caveat text-5xl sm:text-7xl text-orange-500">School Together</span>
+            </motion.h2>
+
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="mt-6 text-lg text-slate-600 dark:text-slate-400"
+              className="mt-6 text-lg text-slate-600 dark:text-slate-400 leading-relaxed"
             >
-              Have questions about features, pricing, or a custom demo?
-              Our team is ready to help you digitize your school.
+              Have questions about pricing, features, onboarding, or want to schedule a custom demo?
+              Our team is ready to assist you.
             </motion.p>
 
             <div className="mt-12 space-y-8">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 dark:bg-orange-950/30">
-                  <Mail className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-slate-900 dark:text-white">Email Us</h4>
-                  <p className="mt-1 text-slate-600 dark:text-slate-400">info@shikshadisha.in</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 dark:bg-orange-950/30">
-                  <Phone className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-slate-900 dark:text-white">Call Us</h4>
-                  <p className="mt-1 text-slate-600 dark:text-slate-400">+91 98765 43210</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 dark:bg-orange-950/30">
-                  <MapPin className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-slate-900 dark:text-white">Visit Us</h4>
-                  <p className="mt-1 text-slate-600 dark:text-slate-400">
-                    123 Tech Park, Hitech City, <br />
-                    Hyderabad, India
-                  </p>
-                </div>
-              </div>
+              {[
+                {
+                  icon: Mail,
+                  title: "Email Us",
+                  detail: "info@shikshadisha.in",
+                  bg: "bg-orange-50 dark:bg-orange-950/30"
+                },
+                {
+                  icon: Phone,
+                  title: "Call Us",
+                  detail: "+91  7 8989 1 4040",
+                  bg: "bg-orange-50 dark:bg-orange-950/30"
+                },
+                {
+                  icon: MapPin,
+                  title: "Visit Us",
+                  detail: "547 Guruwar Peth Near Gauri Ali, Pune, Maharashtra, India",
+                  bg: "bg-orange-50 dark:bg-orange-950/30"
+                }
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="flex items-center gap-5 group"
+                >
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.bg} text-orange-500 group-hover:scale-110 transition-transform duration-300`}>
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{item.title}</h4>
+                    <p className="text-base font-extrabold text-slate-900 dark:text-white mt-1 group-hover:text-orange-500 transition-colors duration-300">
+                      {item.detail}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
 
-          {/* Form Side */}
+          {/* Form Side (7 Columns) - Premium Glass Panel */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-8 dark:border-slate-800 dark:bg-slate-900/50 lg:p-12"
+            transition={{ duration: 0.7 }}
+            className="lg:col-span-7 rounded-[2.5rem] border border-slate-200/60 bg-slate-50/50 p-8 backdrop-blur-md dark:border-slate-800/40 dark:bg-slate-900/50 lg:p-12 shadow-2xl shadow-slate-900/5"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+
+                {/* Name */}
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Name</label>
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    Your Name
+                  </label>
                   <input
                     type="text"
                     required
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 focus:border-orange-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                    placeholder="Your Name"
+                    className="w-full rounded-2xl border border-slate-200/60 bg-white/60 px-4 py-3.5 text-sm text-slate-900 transition-all focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-700/60 dark:bg-slate-800/40 dark:text-white dark:focus:border-orange-400 dark:focus:bg-slate-800"
+                    placeholder="John Doe"
                   />
                 </div>
+
+                {/* School Name */}
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">School Name</label>
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    School / Institute Name
+                  </label>
                   <input
                     type="text"
                     required
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 focus:border-orange-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    className="w-full rounded-2xl border border-slate-200/60 bg-white/60 px-4 py-3.5 text-sm text-slate-900 transition-all focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-700/60 dark:bg-slate-800/40 dark:text-white dark:focus:border-orange-400 dark:focus:bg-slate-800"
                     placeholder="e.g. Modern High School"
                   />
                 </div>
               </div>
 
+              {/* Email */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 focus:border-orange-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-2xl border border-slate-200/60 bg-white/60 px-4 py-3.5 text-sm text-slate-900 transition-all focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-700/60 dark:bg-slate-800/40 dark:text-white dark:focus:border-orange-400 dark:focus:bg-slate-800"
                   placeholder="name@school.com"
                 />
               </div>
 
+              {/* Message */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Message</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                  Message Details
+                </label>
                 <textarea
                   required
                   rows={4}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 focus:border-orange-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  placeholder="How can we help you?"
+                  className="w-full rounded-2xl border border-slate-200/60 bg-white/60 px-4 py-3.5 text-sm text-slate-900 transition-all focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-700/60 dark:bg-slate-800/40 dark:text-white dark:focus:border-orange-400 dark:focus:bg-slate-800 resize-none"
+                  placeholder="How can we help your institute?"
                 />
               </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-14 rounded-2xl bg-orange-400 text-lg font-semibold text-white shadow-xl shadow-orange-400/20 hover:bg-orange-500 disabled:opacity-50"
-              >
-                {loading ? 'Sending...' : 'Send Message'}
-                <Send className="ml-2 h-5 w-5" />
-              </Button>
+              {/* Submit Button */}
+              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-14 rounded-2xl bg-orange-500 text-sm font-bold uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                >
+                  {loading ? 'Sending Request...' : 'Send Message'}
+                  <Send className="h-4 w-4" />
+                </Button>
+              </motion.div>
             </form>
           </motion.div>
+
         </div>
       </div>
     </section>

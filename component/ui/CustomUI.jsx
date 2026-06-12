@@ -16,3 +16,6 @@ export * from './Separator/Separator';
 export * from './Label/Label';
 export { ScrollArea } from './Separator/Separator';
 export * from './Dialog/Dialog';
+export { PageHeader } from './PageHeader';
+export { default as StatsCard } from './StatsCard';
+

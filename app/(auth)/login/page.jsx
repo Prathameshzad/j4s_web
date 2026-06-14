@@ -23,6 +23,12 @@ const LoginPage = () => {
 
     const handleSendOtp = async (e) => {
         e.preventDefault();
+
+        if (loginType === 'phone' && !/^\d{10}$/.test(identifier)) {
+            setError('Please enter a valid 10-digit phone number');
+            return;
+        }
+
         setLoading(true);
         setError('');
 
@@ -36,6 +42,12 @@ const LoginPage = () => {
 
             if (data.success) {
                 setStep(2);
+                if (data.data && data.data.otp) {
+                    // Pre-fill or make it available for development
+                    setOtp(data.data.otp);
+                    // Optionally alert the user (commented out for smooth experience)
+                    // alert(`Development OTP: ${data.data.otp}`);
+                }
             } else {
                 setError(data.message || 'Verification failed');
             }
@@ -146,7 +158,16 @@ const LoginPage = () => {
                                                 placeholder={loginType === 'phone' ? 'e.g. 9876543210' : 'e.g. alex@school.com'}
                                                 required
                                                 value={identifier}
-                                                onChange={(e) => setIdentifier(e.target.value)}
+                                                onChange={(e) => {
+                                                    if (loginType === 'phone') {
+                                                        const val = e.target.value.replace(/\D/g, '');
+                                                        if (val.length <= 10) {
+                                                            setIdentifier(val);
+                                                        }
+                                                    } else {
+                                                        setIdentifier(e.target.value);
+                                                    }
+                                                }}
                                                 className="h-12 rounded-2xl border-slate-200 focus:border-orange-500 dark:border-slate-800"
                                             />
                                         </div>
@@ -204,7 +225,7 @@ const LoginPage = () => {
                                             <div className="flex items-center gap-2 rounded-xl bg-orange-50 p-3 dark:bg-orange-950/20">
                                                 <Zap className="h-4 w-4 text-orange-500" />
                                                 <p className="text-xs font-medium text-orange-900 dark:text-orange-200">
-                                                    Quick Access: The default code is <span className="font-bold">123</span>
+                                                    Check your device for the OTP. {process.env.NODE_ENV !== 'production' && otp && <span className="font-bold">Dev OTP: {otp}</span>}
                                                 </p>
                                             </div>
                                         </div>

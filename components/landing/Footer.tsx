@@ -6,7 +6,7 @@ import { Mail, Phone, Globe, Share2, MessageSquare, Info } from 'lucide-react';
 export default function Footer() {
   return (
     <footer className="relative bg-slate-950 pt-24 pb-12 text-slate-400 overflow-hidden z-10">
-      
+
       {/* HUGE background typography text (inspired by AntiGravity) */}
       <div className="absolute bottom-[-5%] left-1/2 -translate-x-1/2 w-[120%] select-none pointer-events-none z-0 text-center overflow-hidden">
         <span className="text-[14vw] font-black uppercase tracking-widest text-slate-900/40 dark:text-slate-900/60 leading-none block select-none">
@@ -16,7 +16,7 @@ export default function Footer() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-4 pb-16 border-b border-slate-900">
-          
+
           {/* Brand Info */}
           <div className="col-span-1 lg:col-span-1 flex flex-col justify-between">
             <div>
@@ -32,7 +32,7 @@ export default function Footer() {
                 India's smartest and most affordable institute management ecosystem. Empowering education through technology.
               </p>
             </div>
-            
+
             {/* Social handles */}
             <div className="mt-8 flex gap-4 text-slate-500">
               <Link href="#" className="hover:text-orange-500 transition-colors"><Globe className="h-4.5 w-4.5" /></Link>
@@ -48,8 +48,8 @@ export default function Footer() {
             <ul className="mt-6 space-y-3.5 text-sm">
               {['Features', 'Pricing', 'Mobile App', 'Updates'].map((item) => (
                 <li key={item}>
-                  <Link 
-                    href={item === 'Features' || item === 'Pricing' ? `#${item.toLowerCase()}` : '#'} 
+                  <Link
+                    href={item === 'Features' || item === 'Pricing' ? `#${item.toLowerCase()}` : '#'}
                     className="hover:text-orange-400 hover:translate-x-1 inline-block transition-all duration-200"
                   >
                     {item}
@@ -65,8 +65,8 @@ export default function Footer() {
             <ul className="mt-6 space-y-3.5 text-sm">
               {['Documentation', 'Help Center', 'API Status', 'Contact Us'].map((item) => (
                 <li key={item}>
-                  <Link 
-                    href={item === 'Contact Us' ? '#contact' : '#'} 
+                  <Link
+                    href={item === 'Contact Us' ? '#contact' : '#'}
                     className="hover:text-orange-400 hover:translate-x-1 inline-block transition-all duration-200"
                   >
                     {item}
@@ -81,11 +81,11 @@ export default function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-widest text-white">Contact</h4>
             <ul className="mt-6 space-y-3.5 text-sm text-slate-400">
               <li className="flex items-center gap-3">
-                <Mail className="h-4.5 w-4.5 text-orange-500 flex-shrink-0" /> 
-                <span className="hover:text-white transition-colors cursor-pointer">info@shikshadisha.in</span>
+                <Mail className="h-4.5 w-4.5 text-orange-500 flex-shrink-0" />
+                <span className="hover:text-white transition-colors cursor-pointer">support@shikshadisha.com</span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="h-4.5 w-4.5 text-orange-500 flex-shrink-0" /> 
+                <Phone className="h-4.5 w-4.5 text-orange-500 flex-shrink-0" />
                 <span className="hover:text-white transition-colors cursor-pointer">+91 98765 43210</span>
               </li>
             </ul>

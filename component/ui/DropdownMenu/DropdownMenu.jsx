@@ -54,7 +54,7 @@ export const DropdownMenuTrigger = ({ children, render, onClick }) => {
 export const DropdownMenuContent = ({ children, className = '', align, ...props }) => {
   const alignmentClass = align === 'end' ? 'right-0' : 'left-0';
   return (
-    <div className={`absolute z-50 mt-2 rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-900 ${alignmentClass} ${className}`} {...props}>
+    <div className={`absolute z-50 mt-2 rounded-xl bg-white shadow-xl border border-slate-200 focus:outline-none dark:border-slate-800 dark:bg-slate-900 ${alignmentClass} ${className}`} {...props}>
       {children}
     </div>
   );
@@ -67,7 +67,7 @@ export const DropdownMenuContent = ({ children, className = '', align, ...props 
  * @param {string} [props.className]
  */
 export const DropdownMenuItem = ({ children, onClick, className = '', ...props }) => (
-  <div onClick={onClick} className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer dark:text-gray-200 dark:hover:bg-slate-800 ${className}`} {...props}>
+  <div onClick={onClick} className={`flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer dark:text-gray-200 dark:hover:bg-slate-800 ${className}`} {...props}>
     {children}
   </div>
 );

@@ -31,8 +31,27 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
+    } else if (!loading && user && selectedRole) {
+      // Strict Role-Based Access Control
+      const isStaff = selectedRole === 'STAFF';
+      
+      const staffOnlyRoutes = [
+        '/dashboard/notice/add',
+        '/dashboard/homework/add',
+        '/dashboard/leave/studentLeave',
+        '/dashboard/fees'
+      ];
+
+      // Check for strict matches and dynamic staff-only routes
+      const isStaffOnlyPath = staffOnlyRoutes.some(route => pathname.startsWith(route)) ||
+                              (pathname.startsWith('/dashboard/notice/') && pathname !== '/dashboard/notice') ||
+                              (pathname.startsWith('/dashboard/exam/') && pathname.includes('/marks'));
+
+      if (isStaffOnlyPath && !isStaff) {
+        router.push('/dashboard');
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, selectedRole, pathname]);
 
   if (loading || !user) {
     return (

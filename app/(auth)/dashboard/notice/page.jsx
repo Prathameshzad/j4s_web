@@ -9,6 +9,10 @@ import {
     CardContent,
     Badge,
     Spinner,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from '@/component/ui/CustomUI';
 import {
     Plus,
@@ -24,7 +28,9 @@ import {
     Clock,
     Search,
     Filter,
-    Paperclip
+    Paperclip,
+    Megaphone,
+    FileText
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getMediaUrl } from '@/utils/media';
@@ -36,6 +42,7 @@ export default function NoticePage() {
     const [notices, setNotices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedNotice, setSelectedNotice] = useState(null);
 
     useEffect(() => {
         fetchNotices();
@@ -198,7 +205,10 @@ export default function NoticePage() {
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.2, delay: index * 0.05 }}
                             >
-                                <Card className="group h-full flex flex-col bg-white border-slate-200/60 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 rounded-3xl overflow-hidden relative">
+                                <Card 
+                                    onClick={() => setSelectedNotice(notice)}
+                                    className="group h-full flex flex-col bg-white border-slate-200/60 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 rounded-3xl overflow-hidden relative cursor-pointer"
+                                >
                                     {/* Decorative Gradient Top */}
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary opacity-0 group-hover:opacity-100 transition-opacity" />
 
@@ -225,7 +235,10 @@ export default function NoticePage() {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-                                                        onClick={() => router.push(`/dashboard/notice/${notice.id}`)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            router.push(`/dashboard/notice/${notice.id}`);
+                                                        }}
                                                     >
                                                         <Edit2 size={14} />
                                                     </Button>
@@ -233,7 +246,10 @@ export default function NoticePage() {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-8 w-8 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-colors"
-                                                        onClick={() => handleDelete(notice.id)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDelete(notice.id);
+                                                        }}
                                                     >
                                                         <Trash2 size={14} />
                                                     </Button>
@@ -257,6 +273,7 @@ export default function NoticePage() {
                                                             href={getMediaUrl(file.url)}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
+                                                            onClick={(e) => e.stopPropagation()}
                                                             className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-primary/10 hover:text-primary text-slate-600 text-xs font-bold rounded-lg transition-colors border border-slate-200 hover:border-primary/20"
                                                         >
                                                             <Paperclip size={12} />
@@ -332,6 +349,88 @@ export default function NoticePage() {
                     </div>
                 </div>
             </div>
+
+            {/* Notice Details Dialog */}
+            <Dialog open={!!selectedNotice} onOpenChange={(open) => !open && setSelectedNotice(null)}>
+                {selectedNotice && (
+                    <DialogContent className="max-w-2xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+                        <DialogHeader className="p-8 pb-6 bg-slate-50 border-b border-slate-100 relative">
+                            <div className="absolute top-4 right-4 cursor-pointer p-2 rounded-full hover:bg-slate-200 transition-colors" onClick={() => setSelectedNotice(null)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            </div>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="p-4 bg-primary/10 rounded-2xl">
+                                    <Megaphone className="w-6 h-6 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        <Badge variant="outline" className="whitespace-nowrap text-[10px] px-2.5 py-1 font-bold uppercase tracking-widest text-primary border-primary/20 bg-primary/5 rounded-md">
+                                            {selectedNotice.category || selectedNotice.targetType || 'GENERAL NOTICE'}
+                                        </Badge>
+                                        {selectedNotice.classes && selectedNotice.classes.length > 0 && selectedNotice.classes.map(cls => (
+                                            <Badge key={cls.id} variant="outline" className="whitespace-nowrap text-[10px] px-2.5 py-1 font-bold uppercase tracking-widest text-slate-500 border-slate-200 bg-white rounded-md">
+                                                {cls.standard?.name} - {cls.division?.name}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                    <DialogTitle className="text-2xl font-black text-slate-800 leading-tight">
+                                        {selectedNotice.title}
+                                    </DialogTitle>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-200">
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-slate-400" />
+                                    <span className="text-xs font-bold text-slate-600">
+                                        {new Date(selectedNotice.scheduledAt || selectedNotice.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                    </span>
+                                </div>
+                                {selectedNotice.sender && (
+                                    <div className="flex items-center gap-2">
+                                        <User className="w-4 h-4 text-slate-400" />
+                                        <span className="text-xs font-bold text-slate-600">
+                                            {selectedNotice.sender.name || 'Admin'}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </DialogHeader>
+
+                        <div className="p-8 max-h-[60vh] overflow-y-auto no-scrollbar bg-white">
+                            <div className="space-y-6">
+                                <div className="text-[15px] font-medium text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                    {selectedNotice.content}
+                                </div>
+
+                                {selectedNotice.attachments && selectedNotice.attachments.length > 0 && (
+                                    <div className="pt-6 mt-6 border-t border-slate-100">
+                                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Attachments</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {selectedNotice.attachments.map(file => (
+                                                <a 
+                                                    key={file.id} 
+                                                    href={getMediaUrl(file.url)} 
+                                                    target="_blank" 
+                                                    rel="noreferrer"
+                                                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-primary/5 hover:border-primary/20 transition-all border border-slate-100 group"
+                                                >
+                                                    <div className="p-2 bg-white rounded-lg shadow-sm group-hover:text-primary transition-colors">
+                                                        <FileText className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-xs font-bold text-slate-700 truncate pr-2 group-hover:text-primary transition-colors">
+                                                        {file.originalName || file.fileName || 'Document'}
+                                                    </span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </DialogContent>
+                )}
+            </Dialog>
         </div>
     );
 }

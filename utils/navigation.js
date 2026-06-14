@@ -76,13 +76,7 @@ export const NAV_ITEMS = [
         href: '/dashboard/leave/studentLeave',
         roles: ['STAFF']
     },
-    {
-        id: 'fees',
-        label: 'Fees',
-        icon: DollarSign,
-        href: '/dashboard/fees',
-        roles: ['STAFF']
-    },
+
     {
         id: 'timetable',
         label: 'Timetable',

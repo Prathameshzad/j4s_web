@@ -145,7 +145,7 @@ export default function PricingContact() {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase">Write to us</p>
-                      <p className="text-sm font-extrabold text-slate-950 dark:text-white">info@shikshadisha.in</p>
+                      <p className="text-sm font-extrabold text-slate-950 dark:text-white">support@shikshadisha.com</p>
                     </div>
                   </motion.div>
 

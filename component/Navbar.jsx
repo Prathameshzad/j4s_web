@@ -58,12 +58,12 @@ const Navbar = () => {
                                 <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
                                     Hi, <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">{user.name}</span>
                                 </span>
-                                <button
-                                    onClick={logout}
-                                    className="rounded-xl border border-slate-200 bg-white/40 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-900 shadow-sm transition-all hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-800 cursor-pointer"
+                                <Link
+                                    href="/dashboard"
+                                    className="rounded-xl border border-orange-200 bg-orange-50 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-orange-600 shadow-sm transition-all hover:bg-orange-100 dark:border-orange-900/50 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/40 cursor-pointer"
                                 >
-                                    Logout
-                                </button>
+                                    Dashboard
+                                </Link>
                             </div>
                         ) : (
                             <Link
@@ -132,15 +132,13 @@ const Navbar = () => {
                                         <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
                                             Hi, <span className="text-orange-500">{user.name}</span>
                                         </span>
-                                        <button
-                                            onClick={() => {
-                                                logout();
-                                                setIsOpen(false);
-                                            }}
-                                            className="w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-900 transition-all hover:bg-slate-200 dark:bg-slate-800 dark:text-white cursor-pointer"
+                                        <Link
+                                            href="/dashboard"
+                                            onClick={() => setIsOpen(false)}
+                                            className="flex w-full items-center justify-center rounded-xl bg-orange-500 py-3 text-sm font-bold text-white transition-all hover:bg-orange-600 shadow-lg shadow-orange-500/20"
                                         >
-                                            Logout
-                                        </button>
+                                            Go to Dashboard
+                                        </Link>
                                     </div>
                                 ) : (
                                     <Link

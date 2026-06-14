@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
-import { Bell, Clock, ArrowUpRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, Clock, ArrowUpRight, Megaphone, Calendar, FileText, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Badge } from '@/component/ui/CustomUI';
+import { Badge, Dialog, DialogContent, DialogHeader, DialogTitle, Button } from '@/component/ui/CustomUI';
 
 const RecentNotices = ({ notices = [] }) => {
+    const [selectedNotice, setSelectedNotice] = useState(null);
+
     // Group notices dynamically by relative week intervals
     const groups = {
         'This Week': [],
@@ -76,6 +78,7 @@ const RecentNotices = ({ notices = [] }) => {
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
                                                     transition={{ delay: idx * 0.03 }}
+                                                    onClick={() => setSelectedNotice(notice)}
                                                     className="p-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all cursor-pointer group"
                                                 >
                                                     <div className="flex gap-3">
@@ -124,6 +127,83 @@ const RecentNotices = ({ notices = [] }) => {
                     </div>
                 )}
             </div>
+
+            {/* Notice Details Dialog */}
+            <Dialog open={!!selectedNotice} onOpenChange={(open) => !open && setSelectedNotice(null)}>
+                {selectedNotice && (
+                    <DialogContent className="max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+                        <DialogHeader className="p-8 pb-6 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 relative">
+                            <div className="absolute top-4 right-4 cursor-pointer p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" onClick={() => setSelectedNotice(null)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            </div>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="p-4 bg-primary/10 rounded-2xl">
+                                    <Megaphone className="w-6 h-6 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        <Badge variant="outline" className="whitespace-nowrap text-[10px] px-2.5 py-1 font-bold uppercase tracking-widest text-primary border-primary/20 bg-primary/5 rounded-md">
+                                            {selectedNotice.category || selectedNotice.targetType || 'GENERAL NOTICE'}
+                                        </Badge>
+                                    </div>
+                                    <DialogTitle className="text-xl font-black text-slate-800 dark:text-white leading-tight">
+                                        {selectedNotice.title}
+                                    </DialogTitle>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-slate-400" />
+                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                                        {selectedNotice.date || (selectedNotice.createdAt ? new Date(selectedNotice.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Recent')}
+                                    </span>
+                                </div>
+                                {selectedNotice.sender && (
+                                    <div className="flex items-center gap-2">
+                                        <User className="w-4 h-4 text-slate-400" />
+                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                                            {selectedNotice.sender.name || 'Admin'}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </DialogHeader>
+
+                        <div className="p-8 max-h-[60vh] overflow-y-auto no-scrollbar bg-white dark:bg-slate-950">
+                            <div className="space-y-6">
+                                <div className="text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                                    {selectedNotice.content}
+                                </div>
+
+                                {selectedNotice.attachments && selectedNotice.attachments.length > 0 && (
+                                    <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+                                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Attachments</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {selectedNotice.attachments.map(file => (
+                                                <a 
+                                                    key={file.id} 
+                                                    href={file.url} 
+                                                    target="_blank" 
+                                                    rel="noreferrer"
+                                                    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl hover:bg-primary/5 transition-colors border border-slate-100 dark:border-slate-800 group"
+                                                >
+                                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm group-hover:text-primary transition-colors">
+                                                        <FileText className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate pr-2">
+                                                        {file.originalName || 'Document'}
+                                                    </span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </DialogContent>
+                )}
+            </Dialog>
         </div>
     );
 };

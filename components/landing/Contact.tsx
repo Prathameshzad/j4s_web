@@ -69,7 +69,7 @@ export default function Contact() {
                 {
                   icon: Mail,
                   title: "Email Us",
-                  detail: "info@shikshadisha.in",
+                  detail: "support@shikshadisha.com",
                   bg: "bg-orange-50 dark:bg-orange-950/30"
                 },
                 {

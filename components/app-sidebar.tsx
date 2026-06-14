@@ -260,16 +260,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <User className="mr-2 size-4" />
                     Account
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-lg py-2 font-medium focus:bg-primary/5 focus:text-primary">
-                    <Settings2 className="mr-2 size-4" />
-                    Settings
-                  </DropdownMenuItem>
+
                   <DropdownMenuSeparator className="bg-muted/50" />
                   <DropdownMenuItem 
                     onClick={handleLogout}
-                    className="rounded-lg py-2 font-bold text-destructive focus:bg-destructive/10 focus:text-destructive"
+                    className="rounded-xl mt-2 py-3 px-4 font-bold text-red-600 bg-red-50/80 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 focus:bg-red-100 focus:text-red-700 cursor-pointer transition-all border border-red-100 dark:border-red-900/30 flex items-center group"
                   >
-                    <LogOut className="mr-2 size-4" />
+                    <LogOut className="mr-3 size-4 transition-transform group-hover:-translate-x-1" />
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuGroup>

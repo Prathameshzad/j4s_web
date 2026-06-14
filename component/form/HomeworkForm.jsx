@@ -170,6 +170,7 @@ export default function HomeworkForm({ initialData, isEdit = false }) {
                 selectedFiles.forEach(file => {
                     uploadData.append('files', file);
                 });
+                uploadData.append('moduleName', 'homework');
 
                 const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/web';
                 const uploadUrl = apiBase.replace('/api/web', '/api/app') + '/media/upload';

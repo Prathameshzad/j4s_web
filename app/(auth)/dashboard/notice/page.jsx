@@ -23,9 +23,11 @@ import {
     Layout,
     Clock,
     Search,
-    Filter
+    Filter,
+    Paperclip
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getMediaUrl } from '@/utils/media';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function NoticePage() {
@@ -203,13 +205,17 @@ export default function NoticePage() {
                                     <div className="p-6 flex-1 flex flex-col">
                                         <div className="flex items-start justify-between mb-6">
                                             <div className="flex flex-wrap gap-2">
-                                                <Badge className="bg-primary/10 text-primary border-none text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                                    {notice.targetType}
-                                                </Badge>
-                                                {notice.class && (
-                                                    <Badge variant="outline" className="text-slate-500 border-slate-200 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                                        {notice.class.standard?.name} - {notice.class.division?.name}
-                                                    </Badge>
+                                                {notice.senderId === selectedUserId && (
+                                                    <>
+                                                        <Badge className="bg-primary/10 text-primary border-none text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                            {notice.targetType}
+                                                        </Badge>
+                                                        {notice.classes && notice.classes.length > 0 && notice.classes.map(cls => (
+                                                            <Badge key={cls.id} variant="outline" className="text-slate-500 border-slate-200 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                                {cls.standard?.name} - {cls.division?.name}
+                                                            </Badge>
+                                                        ))}
+                                                    </>
                                                 )}
                                             </div>
 
@@ -242,6 +248,23 @@ export default function NoticePage() {
                                             <p className="text-slate-600 text-sm leading-relaxed line-clamp-4 font-medium whitespace-pre-wrap">
                                                 {notice.content}
                                             </p>
+                                            
+                                            {notice.attachments && notice.attachments.length > 0 && (
+                                                <div className="pt-2 flex flex-wrap gap-2">
+                                                    {notice.attachments.map((file) => (
+                                                        <a
+                                                            key={file.id}
+                                                            href={getMediaUrl(file.url)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-primary/10 hover:text-primary text-slate-600 text-xs font-bold rounded-lg transition-colors border border-slate-200 hover:border-primary/20"
+                                                        >
+                                                            <Paperclip size={12} />
+                                                            <span className="truncate max-w-[120px]">{file.originalName || file.fileName || 'Attachment'}</span>
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="pt-6 border-t border-slate-50 flex items-center justify-between">

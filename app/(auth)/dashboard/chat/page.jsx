@@ -91,6 +91,7 @@ const ChatPage = () => {
         Array.from(files).forEach(file => {
             formData.append('files', file);
         });
+        formData.append('moduleName', 'chat');
 
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL.replace('/api/web', '');

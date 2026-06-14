@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { 
@@ -18,21 +18,25 @@ import {
     SelectValue,
     Spinner
 } from '@/component/ui/CustomUI';
-import { Save, X, Calendar, Users, Send, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Save, X, Calendar, Users, Send, AlertCircle, CheckCircle2, Upload, Trash2, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function NoticeForm({ initialData, isEdit = false }) {
     const router = useRouter();
     const { token, selectedRole, user, selectedUserId } = useAuth();
+    const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [fetchingClasses, setFetchingClasses] = useState(true);
     const [fetchingRecipients, setFetchingRecipients] = useState(false);
     
     const [classes, setClasses] = useState([]);
     const [recipients, setRecipients] = useState([]);
+    const [attachments, setAttachments] = useState(initialData?.attachments || []);
+    const [selectedFiles, setSelectedFiles] = useState([]);
     
     const [formData, setFormData] = useState({
-        classIds: initialData?.classId ? [initialData.classId] : [],
+        classIds: initialData?.classes ? initialData.classes.map(c => c.id) : (initialData?.classId ? [initialData.classId] : []),
         targetType: initialData?.targetType || ['STUDENTS'],
         recipientId: initialData?.recipientId || initialData?.recipient?.id || 'ALL',
         title: initialData?.title || '',
@@ -111,6 +115,23 @@ export default function NoticeForm({ initialData, isEdit = false }) {
         }
     };
 
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        setSelectedFiles(prev => [...prev, ...files]);
+        if (e.target) e.target.value = '';
+    };
+
+    const handleRemoveAttachment = (id) => {
+        setAttachments(attachments.filter(a => a.id !== id));
+        toast.success('Existing file removed');
+    };
+
+    const handleRemoveSelectedFile = (idx) => {
+        setSelectedFiles(selectedFiles.filter((_, i) => i !== idx));
+        toast.success('File removed');
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -121,12 +142,44 @@ export default function NoticeForm({ initialData, isEdit = false }) {
 
         setLoading(true);
         try {
+            let newlyUploadedIds = [];
+            
+            // Upload selected files if any
+            if (selectedFiles.length > 0) {
+                setUploading(true);
+                const uploadData = new FormData();
+                selectedFiles.forEach(file => {
+                    uploadData.append('files', file);
+                });
+                uploadData.append('moduleName', 'notice');
+
+                const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+                const uploadUrl = apiBase.replace('/api/web', '/api/app') + '/media/upload';
+                const uploadRes = await fetch(uploadUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: uploadData
+                });
+
+                const uploadResult = await uploadRes.json();
+                setUploading(false);
+
+                if (uploadResult.success) {
+                    newlyUploadedIds = uploadResult.data.map(m => m.id);
+                } else {
+                    throw new Error(uploadResult.message || 'File upload failed');
+                }
+            }
+
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
             const payload = {
                 ...formData,
-                recipientIds: formData.recipientId === 'ALL' || formData.classIds.length !== 1 || formData.targetType.length !== 1
-                    ? [] 
-                    : [formData.recipientId]
+                recipientId: formData.recipientId === 'ALL' || formData.classIds.length !== 1 || formData.targetType.length !== 1
+                    ? null
+                    : formData.recipientId,
+                attachments: [...attachments.map(a => a.id), ...newlyUploadedIds]
             };
 
             const url = isEdit ? `${baseUrl}/notice/${initialData.id}` : `${baseUrl}/notice`;
@@ -152,9 +205,11 @@ export default function NoticeForm({ initialData, isEdit = false }) {
                 toast.error(result.message || 'Something went wrong');
             }
         } catch (error) {
+            console.error('Notice save error:', error);
             toast.error('Failed to save notice');
         } finally {
             setLoading(false);
+            setUploading(false);
         }
     };
 
@@ -315,11 +370,110 @@ export default function NoticeForm({ initialData, isEdit = false }) {
                         />
                     </div>
 
+                    {/* 7. File Uploadation System */}
+                    <div className="space-y-3">
+                        <Label className="text-sm font-bold text-slate-600 ml-1">Attach Materials & Files (Optional)</Label>
+                        <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-slate-200 hover:border-primary/50 rounded-[2rem] p-8 text-center cursor-pointer bg-slate-50/30 hover:bg-primary/5 transition-all group"
+                        >
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                className="hidden" 
+                                multiple 
+                                onChange={handleFileChange} 
+                            />
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <div className="p-4 bg-white rounded-2xl shadow-md group-hover:scale-110 transition-transform">
+                                    {uploading ? (
+                                        <Spinner className="text-primary w-6 h-6" />
+                                    ) : (
+                                        <Upload className="text-primary w-6 h-6" />
+                                    )}
+                                </div>
+                                <span className="font-black text-slate-700 mt-2">
+                                    {uploading ? 'Uploading your files...' : 'Drag & drop or click to upload'}
+                                </span>
+                                <span className="text-xs text-slate-400 font-medium">
+                                    Support PDF, DOCX, PNG, JPG (Max 50MB)
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* List of Attachments */}
+                        {(attachments.length > 0 || selectedFiles.length > 0) && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                {/* Server attachments */}
+                                {attachments.map(att => (
+                                    <div 
+                                        key={att.id} 
+                                        className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white shadow-sm"
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="p-2 bg-primary/10 rounded-xl text-primary flex-shrink-0">
+                                                <FileText size={18} />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-slate-800 truncate">
+                                                    {att.originalName}
+                                                </p>
+                                                <p className="text-[10px] text-slate-400 font-medium">
+                                                    {(att.size / (1024 * 1024)).toFixed(2)} MB
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => handleRemoveAttachment(att.id)}
+                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl flex-shrink-0"
+                                        >
+                                            <Trash2 size={16} />
+                                        </Button>
+                                    </div>
+                                ))}
+
+                                {/* Locally selected files */}
+                                {selectedFiles.map((file, idx) => (
+                                    <div 
+                                        key={`local-${idx}`} 
+                                        className="flex items-center justify-between p-4 rounded-2xl border border-dashed border-primary/20 bg-primary/5 shadow-sm"
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="p-2 bg-primary/20 rounded-xl text-primary flex-shrink-0">
+                                                <Upload size={18} />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-slate-800 truncate">
+                                                    {file.name}
+                                                </p>
+                                                <p className="text-[10px] text-slate-400 font-medium">
+                                                    {(file.size / (1024 * 1024)).toFixed(2)} MB (Queued)
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => handleRemoveSelectedFile(idx)}
+                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl flex-shrink-0"
+                                        >
+                                            <Trash2 size={16} />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     <div className="flex items-center gap-4 pt-4">
                         <Button 
                             type="submit" 
                             className="flex-1 h-16 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-xl shadow-orange-200 transition-all hover:scale-[1.02] active:scale-95"
-                            disabled={loading}
+                            disabled={loading || uploading}
                         >
                             {loading ? <Spinner className="mr-2" /> : <Save className="w-6 h-6 mr-2" />}
                             {isEdit ? 'Update Notice' : 'Post Notice'}

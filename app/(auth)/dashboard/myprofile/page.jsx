@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
+import { getMediaUrl } from '@/utils/media';
 import {
   Loader2, User, Mail, Phone, Briefcase, GraduationCap,
   Users, MapPin, Calendar, Camera, BookOpen, Clock,
@@ -113,7 +114,7 @@ export default function MyProfile() {
           <div className="relative">
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-white p-1.5 shadow-2xl">
               <Avatar className="w-full h-full rounded-2xl border-none">
-                <AvatarImage src={profile?.basicDetails?.avatarUrl} />
+                <AvatarImage src={getMediaUrl(profile?.basicDetails?.avatarUrl)} />
                 <AvatarFallback className="bg-slate-100 text-primary text-4xl font-black">
                   {profile?.basicDetails?.name?.charAt(0)}
                 </AvatarFallback>

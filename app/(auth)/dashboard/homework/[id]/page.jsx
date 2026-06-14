@@ -131,6 +131,7 @@ export default function HomeworkDetailPage() {
             if (submitFiles.length > 0) {
                 const formData = new FormData();
                 submitFiles.forEach(file => formData.append('files', file));
+                formData.append('moduleName', 'homework');
                 
                 const uploadRes = await fetch(`${baseUrl.replace('/api/web', '')}/api/app/media/upload`, {
                     method: 'POST',

@@ -188,7 +188,7 @@ We do not collect personal information from minors independently. Parents and le
 
 If you have questions, grievances, or requests regarding this Privacy Policy or your data practices, please reach out to our designated Data Protection Officer:`,
     contactDetails: {
-      email: 'privacy@shikshadisha.in',
+      email: 'support@shikshadisha.com',
       phone: '+91 7 8989-1-4040',
       address: 'Data Protection Officer, Shiksha Disha, 123 Tech Park, Hitech City, Hyderabad, India'
     }
@@ -351,8 +351,8 @@ export default function PrivacyPolicy() {
                         <button
                           onClick={() => scrollToSection(section.id)}
                           className={`group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all cursor-pointer ${isActive
-                              ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                              : 'text-slate-600 hover:bg-slate-100 hover:text-orange-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+                            ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+                            : 'text-slate-600 hover:bg-slate-100 hover:text-orange-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
                             }`}
                         >
                           <Icon className={`h-4.5 w-4.5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-orange-500 dark:group-hover:text-white'}`} />

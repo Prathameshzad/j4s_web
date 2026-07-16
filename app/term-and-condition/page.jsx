@@ -55,7 +55,7 @@ To represent an institution and configure account levels, you must be a legally 
       },
       {
         title: 'Unauthorized Access Notification',
-        desc: 'You must notify our technical support team immediately at security@shikshadisha.in upon detecting any breach of security or unauthorized access.'
+        desc: 'You must notify our technical support team immediately at support@shikshadisha.com upon detecting any breach of security or unauthorized access.'
       }
     ]
   },
@@ -156,7 +156,7 @@ To represent an institution and configure account levels, you must be a legally 
     details: [
       {
         title: 'Termination for Convenience',
-        desc: 'School administrators can request termination at the end of their current billing cycle by emailing accounts@shikshadisha.in at least 30 days in advance.'
+        desc: 'School administrators can request termination at the end of their current billing cycle by emailing support@shikshadisha.com at least 30 days in advance.'
       },
       {
         title: 'Termination for Cause',
@@ -198,7 +198,7 @@ The place of arbitration and legal jurisdiction shall be Hyderabad, Telangana, I
 
 For general policy queries, technical assistance, or institutional order modifications, please utilize our formal channels:`,
     contactDetails: {
-      email: 'support@shikshadisha.in',
+      email: 'support@shikshadisha.com',
       phone: '+91 7 8989-1-4040',
       address: 'Legal Operations Division, Shiksha Disha, 123 Tech Park, Hitech City, Hyderabad, India'
     }
@@ -360,8 +360,8 @@ export default function TermsAndConditions() {
                         <button
                           onClick={() => scrollToSection(section.id)}
                           className={`group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all cursor-pointer ${isActive
-                              ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                              : 'text-slate-600 hover:bg-slate-100 hover:text-orange-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+                            ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+                            : 'text-slate-600 hover:bg-slate-100 hover:text-orange-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
                             }`}
                         >
                           <Icon className={`h-4.5 w-4.5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-orange-500 dark:group-hover:text-white'}`} />

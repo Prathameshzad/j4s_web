@@ -229,7 +229,7 @@ export default function SupportPage() {
                 </div>
                 <div>
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-[2px] mb-1">Email Us</p>
-                  <p className="text-lg font-black tracking-tight">care@shikshadisha.com</p>
+                  <p className="text-lg font-black tracking-tight">support@shikshadisha.com</p>
                 </div>
               </div>
             </CardContent>

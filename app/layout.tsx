@@ -56,8 +56,10 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${plusJakartaSans.variable} ${caveat.variable} h-full antialiased`}
+      style={{ colorScheme: 'light' }}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AuthProvider>
           <NotificationProvider>
             <ChatProvider>
